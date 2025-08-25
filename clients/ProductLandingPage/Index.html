@@ -1,840 +1,355 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digitaler Concierge - Mehr Umsatz, weniger Aufwand</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: #000;
-            color: #fff;
-            overflow-x: hidden;
-        }
-
-        /* Variables */
-        :root {
-            --bg: #000000;
-            --ink: #ffffff;
-            --muted: #94a3b8;
-            --acc: #10ff88;
-            --acc-glow: #00ff7f;
-            --card: rgba(15, 15, 15, 0.8);
-            --card-border: rgba(16, 255, 136, 0.15);
-            --glass: rgba(255, 255, 255, 0.03);
-            --qr_size: 160px;
-            --bubble_size: 56px;
-        }
-
-        /* Animated Background */
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(16, 255, 136, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(16, 255, 136, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(147, 51, 234, 0.08) 0%, transparent 40%),
-                linear-gradient(180deg, #000 0%, #0a0a0a 100%);
-            z-index: 0;
-            animation: backgroundShift 20s ease infinite;
-        }
-
-        @keyframes backgroundShift {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(1deg); }
-        }
-
-        /* Floating Particles */
-        .particles {
-            position: fixed;
-            inset: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: var(--acc);
-            border-radius: 50%;
-            opacity: 0;
-            animation: float 15s infinite;
-            box-shadow: 0 0 10px var(--acc-glow);
-        }
-
-        @keyframes float {
-            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
-        }
-
-        .container {
-            position: relative;
-            z-index: 2;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 80px 0 60px;
-            animation: fadeInUp 1s ease;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .hero-badge {
-            display: inline-block;
-            padding: 8px 20px;
-            background: linear-gradient(135deg, rgba(16,255,136,.2), rgba(16,255,136,.05));
-            border: 1px solid var(--card-border);
-            border-radius: 50px;
-            font-size: 12px;
-            letter-spacing: 2px;
-            color: var(--acc);
-            margin-bottom: 30px;
-            animation: pulse 2s infinite;
-            text-transform: uppercase;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: .9; }
-        }
-
-        .hero h1 {
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #fff 0%, var(--acc) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 80px rgba(16,255,136,.5);
-        }
-
-        .hero-subtitle {
-            font-size: clamp(1.2rem, 3vw, 1.5rem);
-            color: var(--muted);
-            max-width: 700px;
-            margin: 0 auto 40px;
-            line-height: 1.6;
-        }
-
-        /* Demo Section */
-        .demo-section {
-            margin: 80px 0;
-            animation: fadeInUp 1.2s ease;
-        }
-
-        .demo-card {
-            background: linear-gradient(135deg, var(--card), rgba(16,255,136,.02));
-            border: 1px solid var(--card-border);
-            border-radius: 30px;
-            padding: 50px 40px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            position: relative;
-            overflow: hidden;
-            text-align: center;
-        }
-
-        .demo-card::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, var(--acc-glow), transparent);
-            opacity: .1;
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        .demo-title {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .demo-subtitle {
-            color: var(--muted);
-            margin-bottom: 40px;
-            font-size: 1.1rem;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Chat Window */
-        .chat-window {
-            max-width: 500px;
-            height: 500px;
-            margin: 0 auto 30px;
-            background: rgba(10,10,10,.9);
-            border: 1px solid rgba(16,255,136,.2);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,.5);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            z-index: 2;
-        }
-
-        .chat-header {
-            background: linear-gradient(90deg, var(--acc), #00cc66);
-            color: #000;
-            padding: 15px 20px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 1.1rem;
-        }
-
-        .chat-close {
-            background: transparent;
-            border: none;
-            color: #000;
-            font-size: 24px;
-            font-weight: 900;
-            cursor: pointer;
-            transition: .3s;
-        }
-
-        .chat-close:hover {
-            transform: rotate(90deg);
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: rgba(5,5,5,.6);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .msg {
-            padding: 12px 16px;
-            border-radius: 18px;
-            max-width: 85%;
-            font-size: 14px;
-            line-height: 1.5;
-            animation: msgPop .3s ease;
-        }
-
-        @keyframes msgPop {
-            from { transform: scale(.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .user {
-            background: linear-gradient(135deg, rgba(16,255,136,.2), rgba(16,255,136,.1));
-            align-self: flex-end;
-            color: #fff;
-            border: 1px solid rgba(16,255,136,.3);
-        }
-
-        .bot {
-            background: rgba(255,255,255,.05);
-            align-self: flex-start;
-            color: #e2e8f0;
-            border: 1px solid rgba(255,255,255,.1);
-        }
-
-        .chat-input-area {
-            display: flex;
-            border-top: 1px solid rgba(16,255,136,.2);
-            background: rgba(10,10,10,.9);
-        }
-
-        .chat-input {
-            flex: 1;
-            border: none;
-            padding: 15px 20px;
-            font-size: 14px;
-            background: transparent;
-            color: #fff;
-            outline: none;
-        }
-
-        .chat-input::placeholder {
-            color: rgba(148,163,184,.7);
-        }
-
-        .chat-send {
-            background: linear-gradient(135deg, var(--acc), #00cc66);
-            color: #000;
-            border: none;
-            padding: 0 25px;
-            cursor: pointer;
-            font-weight: 800;
-            transition: .3s;
-        }
-
-        .chat-send:hover {
-            background: linear-gradient(135deg, #00ff88, #00ff88);
-        }
-
-        /* QR Section */
-        .qr-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 30px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .qr-wrapper {
-            position: relative;
-            width: var(--qr_size);
-            height: var(--qr_size);
-        }
-
-        .qr-container {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.85));
-            border-radius: 24px;
-            padding: 15px;
-            box-shadow: 0 20px 60px rgba(16,255,136,.3), inset 0 0 20px rgba(16,255,136,.1);
-            display: grid;
-            place-items: center;
-            cursor: pointer;
-            transition: .3s;
-            animation: qrGlow 3s infinite;
-            text-decoration: none;
-        }
-
-        @keyframes qrGlow {
-            0%, 100% { box-shadow: 0 20px 60px rgba(16,255,136,.3), inset 0 0 20px rgba(16,255,136,.1); }
-            50% { box-shadow: 0 20px 80px rgba(16,255,136,.5), inset 0 0 30px rgba(16,255,136,.2); }
-        }
-
-        .qr-container:hover {
-            transform: scale(1.05);
-        }
-
-        .qr-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-        }
-
-        .chat-bubble {
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            width: var(--bubble_size);
-            height: var(--bubble_size);
-            background: linear-gradient(135deg, var(--acc), #00cc66);
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            cursor: pointer;
-            font-size: 24px;
-            box-shadow: 0 10px 40px rgba(16,255,136,.5), inset 0 -3px 10px rgba(0,0,0,.2);
-            transition: .3s;
-            animation: bubblePulse 2s infinite;
-            z-index: 10;
-        }
-
-        @keyframes bubblePulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .chat-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff3366;
-            color: #fff;
-            font-size: 12px;
-            font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 20px;
-            display: none;
-        }
-
-        .qr-info {
-            text-align: center;
-            color: var(--muted);
-            font-size: 14px;
-            max-width: 300px;
-        }
-
-        .qr-info strong {
-            color: var(--acc);
-            display: block;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        /* CTA Buttons */
-        .cta-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin: 40px 0;
-            position: relative;
-            z-index: 2;
-        }
-
-        .cta-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 20px 40px;
-            background: linear-gradient(135deg, var(--acc), #00cc66);
-            color: #000;
-            font-weight: 800;
-            font-size: 1.2rem;
-            text-decoration: none;
-            border-radius: 50px;
-            transition: .3s;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(16,255,136,.4);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .cta-primary:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 15px 60px rgba(16,255,136,.6);
-        }
-
-        .cta-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 18px 35px;
-            background: transparent;
-            color: var(--acc);
-            font-weight: 800;
-            font-size: 1.1rem;
-            text-decoration: none;
-            border: 2px solid var(--acc);
-            border-radius: 50px;
-            transition: .3s;
-        }
-
-        .cta-secondary:hover {
-            color: #000;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 40px rgba(16,255,136,.4);
-            background: var(--acc);
-        }
-
-        /* Marketing Sections */
-        .marketing-section {
-            margin: 100px 0;
-            animation: fadeInUp 1.4s ease;
-        }
-
-        .section-title {
-            font-size: 2.8rem;
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #fff 0%, var(--acc) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .section-subtitle {
-            text-align: center;
-            font-size: 1.3rem;
-            color: var(--muted);
-            max-width: 600px;
-            margin: 0 auto 50px;
-        }
-
-        .benefits-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            margin-top: 50px;
-        }
-
-        .benefit-card {
-            background: linear-gradient(135deg, var(--card), rgba(16,255,136,.02));
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 40px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            transition: transform 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .benefit-card::before {
-            content: "";
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(135deg, var(--acc), transparent, var(--acc));
-            border-radius: 20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: -1;
-        }
-
-        .benefit-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .benefit-card:hover::before {
-            opacity: 0.3;
-        }
-
-        .benefit-card h3 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            color: var(--acc);
-            font-weight: 700;
-        }
-
-        .benefit-list {
-            list-style: none;
-        }
-
-        .benefit-list li {
-            padding: 10px 0;
-            font-size: 1.1rem;
-            position: relative;
-            padding-left: 30px;
-            color: #e2e8f0;
-        }
-
-        .benefit-list li::before {
-            content: '→';
-            color: var(--acc);
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-            font-size: 1.2rem;
-        }
-
-        /* Steps Section */
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 40px;
-            margin-top: 60px;
-        }
-
-        .step {
-            text-align: center;
-            position: relative;
-            background: linear-gradient(135deg, var(--card), rgba(16,255,136,.02));
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 30px 20px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .step:hover {
-            transform: translateY(-5px);
-        }
-
-        .step-number {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--acc), #00cc66);
-            color: #000;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 0 auto 20px;
-            box-shadow: 0 10px 25px rgba(16,255,136,.3);
-        }
-
-        .step h4 {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: var(--acc);
-            font-weight: 600;
-        }
-
-        .step p {
-            color: var(--muted);
-            font-size: 1rem;
-        }
-
-        /* Features Grid */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin: 50px 0;
-        }
-
-        .feature-item {
-            display: flex;
-            align-items: center;
-            background: linear-gradient(135deg, var(--card), rgba(16,255,136,.02));
-            border: 1px solid var(--card-border);
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .feature-item:hover {
-            transform: translateY(-3px);
-        }
-
-        .check-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--acc);
-            color: #000;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-right: 20px;
-            flex-shrink: 0;
-            font-weight: bold;
-        }
-
-        .feature-text {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #e2e8f0;
-        }
-
-        /* Popup */
-        .popup-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.8);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            z-index: 999;
-            display: none;
-        }
-
-        .popup-wrap {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            display: none;
-            animation: popupIn .3s ease;
-        }
-
-        @keyframes popupIn {
-            from { transform: translate(-50%, -50%) scale(.8); opacity: 0; }
-            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-
-        /* Scrollbar */
-        .chat-messages::-webkit-scrollbar { width: 6px; }
-        .chat-messages::-webkit-scrollbar-track { background: rgba(255,255,255,.05); }
-        .chat-messages::-webkit-scrollbar-thumb { background: var(--acc); border-radius: 3px; }
-
-        /* Footer */
-        .footer {
-            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
-            padding: 40px 0;
-            text-align: center;
-            border-top: 1px solid var(--card-border);
-            margin-top: 100px;
-        }
-
-        .footer-links {
-            margin-top: 20px;
-        }
-
-        .footer-links a {
-            color: var(--muted);
-            text-decoration: none;
-            margin: 0 15px;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--acc);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
-            .hero-subtitle { font-size: 1.2rem; }
-            .benefits-grid { grid-template-columns: 1fr; gap: 30px; }
-            .steps-grid { grid-template-columns: 1fr; gap: 30px; }
-            .section-title { font-size: 2.2rem; }
-            .container { padding: 0 15px; }
-            .demo-card { padding: 30px 20px; }
-            .chat-window { height: 450px; }
-            .qr-section { flex-direction: column; gap: 20px; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Digitaler Concierge – Micro-SaaS für Ferienwohnungen & Apartments</title>
+  <meta name="description" content="Dein digitaler Concierge: mehr Umsatz, weniger Aufwand, begeisterte Gäste. Plug & Play, DSGVO-konform, White-Label – jetzt kostenlos testen." />
+  <style>
+    :root{
+      --bg:#0b0d10;
+      --text:#f5f7fb;
+      --muted:#b8c0cc;
+      --card:#11141b;
+      --soft:#171b24;
+      --border:#232938;
+      --accent:#17c5c0;       /* Türkis (wechselbar zu Royalblau: #4169e1) */
+      --accent-strong:#12a7a3;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+      --radius-lg:22px;
+      --maxw:1120px;
+    }
+
+    /* Reset & base */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji; line-height:1.5}
+    img{max-width:100%;display:block}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:var(--maxw);margin-inline:auto;padding:clamp(14px,2vw,24px)}
+
+    /* Top bar */
+    .nav{position:sticky;top:0;z-index:50;background:linear-gradient(180deg, rgba(11,13,16,.9), rgba(11,13,16,.6) 60%, transparent);backdrop-filter:saturate(1.1) blur(8px);border-bottom:1px solid rgba(255,255,255,.04)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.2px}
+    .brand-badge{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#6ff3e8); color:#00161a; font-weight:900}
+    .nav-cta{display:flex;gap:10px;align-items:center}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;padding:.9rem 1.3rem;border-radius:999px;border:1px solid transparent;font-weight:700;letter-spacing:.2px;box-shadow:var(--shadow);transition:.2s transform ease,.2s background ease,.2s border-color ease}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-accent{background:var(--accent);color:#002a2b}
+    .btn-accent:hover{background:var(--accent-strong)}
+    .btn-ghost{background:transparent;border-color:var(--border);color:var(--text)}
+    .btn-ghost:hover{background:#0e1218}
+
+    /* Hero */
+    .hero{position:relative;overflow:hidden}
+    .hero-wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center}
+    @media (max-width:920px){.hero-wrap{grid-template-columns:1fr;}}
+    .glow{
+      position:absolute;inset:auto -20% -35% -20%;
+      height:75vh; pointer-events:none; filter:blur(60px) saturate(140%);
+      background:radial-gradient(65% 55% at 50% 50%, rgba(23,197,192,.35), transparent 60%),
+                 radial-gradient(40% 35% at 80% 60%, rgba(65,105,225,.25), transparent 60%);
+      opacity:.8;
+    }
+    .hero-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--border); border-radius:var(--radius-lg); padding:clamp(18px,3.2vw,36px);
+      backdrop-filter:saturate(1.2) blur(10px); box-shadow:var(--shadow);
+    }
+    h1{font-size:clamp(28px,4.1vw,48px);line-height:1.1;margin:0 0 14px}
+    .lead{color:var(--muted);font-size:clamp(16px,1.5vw,20px);margin:0 0 22px}
+    .trust{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    .badge{font-size:.85rem;padding:.45rem .7rem;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.03)}
+    .qr-demo{
+      background:linear-gradient(180deg, #0e1218, #0b0d10);
+      border:1px solid var(--border); border-radius:var(--radius-lg);
+      padding:22px; display:grid; place-items:center;
+      aspect-ratio: 4/3;
+    }
+    .qr-box{background:white; padding:14px;border-radius:14px; width:min(320px,70%); box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .qr{width:100%; aspect-ratio:1/1; background:
+      radial-gradient(circle at 25% 25%, #111 0 6%, transparent 6%),
+      radial-gradient(circle at 75% 25%, #111 0 6%, transparent 6%),
+      radial-gradient(circle at 25% 75%, #111 0 6%, transparent 6%),
+      radial-gradient(circle at 75% 75%, #111 0 6%, transparent 6%),
+      repeating-linear-gradient(90deg, #111 0 6px, #fff 6px 12px),
+      repeating-linear-gradient(#111 0 6px, #fff 6px 12px);
+      border-radius:10px; position:relative;
+    }
+    .qr-bubble{position:absolute; inset:auto 10% 10% auto; background:linear-gradient(135deg, var(--accent), #76f0e9);
+      color:#00161a; font-weight:800; padding:.5rem .7rem; border-radius:12px; box-shadow:0 8px 20px rgba(23,197,192,.35); font-size:.8rem}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+
+    /* Sections */
+    section{padding:clamp(36px,6.2vw,84px) 0}
+    .section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(18px,3vw,28px)}
+    h2{font-size:clamp(22px,2.6vw,34px);margin:0 0 14px}
+    .kicker{display:inline-block;color:var(--accent);font-weight:800;letter-spacing:.18em;text-transform:uppercase;font-size:.75rem;margin-bottom:8px}
+    .grid{display:grid;gap:18px}
+    .cols-2{grid-template-columns:1fr 1fr}
+    .cols-3{grid-template-columns:repeat(3,1fr)}
+    .cols-4{grid-template-columns:repeat(4,1fr)}
+    @media (max-width:980px){.cols-4{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:780px){.cols-2,.cols-3{grid-template-columns:1fr}}
+
+    /* Lists & cards */
+    .split{display:grid;gap:18px}
+    .split .panel{background:var(--soft);border:1px solid var(--border);border-radius:var(--radius);padding:22px}
+    .panel h3{margin:0 0 10px;font-size:1.1rem}
+    ul{padding-left:1.2rem;margin:0}
+    li{margin:.35rem 0}
+    .icon-step{display:flex;gap:14px;align-items:flex-start;background:var(--soft);border:1px solid var(--border);border-radius:16px;padding:16px}
+    .icon{width:38px;height:38px;border-radius:12px;display:inline-grid;place-items:center;background:linear-gradient(135deg, rgba(23,197,192,.18), rgba(255,255,255,.06));border:1px solid var(--border)}
+    .small{font-size:.95rem;color:var(--muted)}
+
+    /* Benefits grid */
+    .benefit{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));border:1px solid var(--border);border-radius:16px;padding:18px}
+    .benefit strong{display:block;margin-bottom:6px}
+
+    /* CTA band */
+    .cta{position:relative;border-radius:var(--radius-lg);background:
+      radial-gradient(60% 120% at 15% 15%, rgba(23,197,192,.25), transparent 60%),
+      radial-gradient(60% 120% at 85% 85%, rgba(65,105,225,.25), transparent 60%),
+      linear-gradient(180deg, #0f141b, #0b0d10);
+      border:1px solid var(--border); box-shadow:var(--shadow);
+      padding:clamp(22px,4.4vw,44px)
+    }
+    .cta h3{font-size:clamp(20px,2.2vw,28px);margin:0 0 8px}
+    .cta p{margin:0 0 14px;color:var(--muted)}
+    .cta .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+
+    /* Footer */
+    footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);font-size:.95rem}
+    footer .links{display:flex;gap:14px;flex-wrap:wrap}
+    footer a{color:var(--muted)}
+    footer a:hover{color:var(--text)}
+
+    /* Smooth scroll */
+    html{scroll-behavior:smooth}
+  </style>
 </head>
 <body>
-    <!-- Animated Particles -->
-    <div class="particles">
-        <div class="particle" style="left:10%;animation-delay:0s"></div>
-        <div class="particle" style="left:20%;animation-delay:2s"></div>
-        <div class="particle" style="left:30%;animation-delay:4s"></div>
-        <div class="particle" style="left:40%;animation-delay:6s"></div>
-        <div class="particle" style="left:50%;animation-delay:8s"></div>
-        <div class="particle" style="left:60%;animation-delay:10s"></div>
-        <div class="particle" style="left:70%;animation-delay:12s"></div>
-        <div class="particle" style="left:80%;animation-delay:14s"></div>
-        <div class="particle" style="left:90%;animation-delay:1s"></div>
+
+  <!-- SVG Icons -->
+  <svg width="0" height="0" style="position:absolute;visibility:hidden" aria-hidden="true">
+    <symbol id="i-qr" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M4 4h6v6H4V4zm2 2v2h2V6H6zM14 4h6v6h-6V4zm2 2v2h2V6h-2zM4 14h6v6H4v-6zm2 2v2h2v-2H6zM14 14h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+    </symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v16h10V4H7zm5 15a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"/>
+    </symbol>
+    <symbol id="i-db" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M12 2C7.58 2 4 3.79 4 6v12c0 2.21 3.58 4 8 4s8-1.79 8-4V6c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 .93 6 2s-2.13 2-6 2-6-.93-6-2 2.13-2 6-2zm0 6c3.87 0 6 .93 6 2s-2.13 2-6 2-6-.93-6-2 2.13-2 6-2zm0 6c3.87 0 6 .93 6 2s-2.13 2-6 2-6-.93-6-2 2.13-2 6-2z"/>
+    </symbol>
+    <symbol id="i-euro" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M15.5 5.5a5.5 5.5 0 0 1 4.5 2.3l-1.8 1.2A3.5 3.5 0 0 0 9.9 10H7v2h2.5a5.5 5.5 0 0 0 0 0h-2v2h2.9a3.5 3.5 0 0 0 8.3 1.5l1.8 1.2A5.5 5.5 0 0 1 15.5 19a5.5 5.5 0 0 1-5.2-3H7v-2h2.6a5.6 5.6 0 0 1 0-2H7V8h3.3a5.5 5.5 0 0 1 5.2-2.5z"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M9 16.17l-3.88-3.88L3.7 13.7 9 19l12-12-1.41-1.41z"/>
+    </symbol>
+  </svg>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <span class="brand-badge">DC</span>
+        <span>Digitaler Concierge</span>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="#vorteile" aria-label="Zu den Vorteilen">Vorteile</a>
+        <a class="btn btn-accent" href="#kontakt" aria-label="Jetzt kostenlos testen">Jetzt kostenlos testen</a>
+      </div>
     </div>
+  </div>
 
+  <!-- HERO -->
+  <header class="hero">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="container hero-wrap">
+      <div class="hero-card">
+        <h1>Dein digitaler Concierge – mehr Umsatz, weniger Aufwand, begeisterte Gäste</h1>
+        <p class="lead">Ein QR-Code im Apartment genügt – und deine Gäste genießen Premium-Service, während du automatisch mitverdienst.</p>
+        <div class="hero-actions">
+          <a class="btn btn-accent" href="#kontakt">Jetzt kostenlos testen</a>
+          <a class="btn btn-ghost" href="#so-funktionierts">So funktioniert’s</a>
+        </div>
+        <div class="trust">
+          <span class="badge">DSGVO-konform</span>
+          <span class="badge">Gehostet in der EU</span>
+          <span class="badge">White-Label</span>
+          <span class="badge">Plug &amp; Play</span>
+        </div>
+      </div>
+
+      <!-- QR / Visual -->
+      <div class="qr-demo" aria-hidden="true">
+        <div class="qr-box">
+          <div class="qr">
+            <span class="qr-bubble">Scan me</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECTION: Vertrauen / Warum -->
+  <section id="warum">
     <div class="container">
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-badge">✨ Die Zukunft der Gästekommunikation</div>
-            <h1>Dein digitaler Concierge – mehr Umsatz, weniger Aufwand, begeisterte Gäste</h1>
-            <p class="hero-subtitle">Ein QR-Code im Apartment genügt – und deine Gäste genießen Premium-Service, während du automatisch mitverdienst.</p>
-            
-            <div class="cta-container">
-                <a href="mailto:contact@eudemonia-coaching.de?subject=GPT%20bestellen%20%28inkl.%20Landingpage%29" class="cta-primary">✨ Jetzt kostenlos testen</a>
-            </div>
-        </section>
+      <span class="kicker">Vertrauensaufbau</span>
+      <h2>Warum unser Concierge?</h2>
+      <div class="split cols-2">
+        <div class="panel">
+          <h3>Für Hosts (Vermieter &amp; Agenturen):</h3>
+          <ul>
+            <li>Mehr Umsatz durch Affiliate- und Partnerangebote</li>
+            <li>Keine ständige Erreichbarkeit notwendig</li>
+            <li>Eigene Tipps einfach einpflegen → personalisiertes Gästeerlebnis</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Für Gäste (Nutzer):</h3>
+          <ul>
+            <li>Concierge-Service direkt am Smartphone, ohne App</li>
+            <li>Sofortige Insider-Tipps für Essen, Ausflüge &amp; Services</li>
+            <li>Buchung mit 1 Klick – bequem, schnell, stressfrei</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        <!-- Demo Section -->
-        <section class="demo-section">
-            <div class="demo-card">
-                <h2 class="demo-title">Live Demo - Erleben Sie die Magie ✨</h2>
-                <p class="demo-subtitle">
-                    Frag einfach los – zu Check-in, Hausregeln, Ausstattung oder Tipps in der Umgebung. 
-                    Der Accommodation Concierge hilft dir sofort weiter.
-                </p>
+  <!-- SECTION: So funktioniert’s -->
+  <section id="so-funktionierts">
+    <div class="container">
+      <span class="kicker">Ablauf</span>
+      <h2>So funktioniert’s</h2>
 
-                <div class="chat-window" id="inline-chat">
-                    <div class="chat-header">
-                        <span>💬 Digitaler Concierge</span>
-                        <button class="chat-close" id="inline-close" title="Minimieren" style="display:none">×</button>
-                    </div>
-                    <div class="chat-messages" id="inline-messages"></div>
-                    <div class="chat-input-area">
-                        <input type="text" class="chat-input" id="inline-input" placeholder="Frag z. B.: 'Wo kann ich heute gut essen?'" />
-                        <button class="chat-send" id="inline-send">Senden</button>
-                    </div>
-                </div>
+      <div class="grid">
+        <div class="icon-step">
+          <div class="icon"><svg><use href="#i-qr"/></svg></div>
+          <div>
+            <strong>1. QR-Code im Apartment platzieren</strong>
+            <div class="small">Dein Einstieg in Premium-Gästekommunikation.</div>
+          </div>
+        </div>
 
-                <!-- QR Code Section -->
-                <div class="qr-section">
-                    <div class="qr-wrapper">
-                        <a class="qr-container" id="apt-qr" href="#openChat" title="Scannen zum Öffnen des Chats">
-                            <img id="apt-qr-img" alt="QR zum Öffnen des Chats" />
-                        </a>
-                        <div class="chat-bubble" id="bubble-btn" aria-label="Chat öffnen">💬
-                            <span class="chat-badge" id="bubble-badge">1</span>
-                        </div>
-                    </div>
-                    <div class="qr-info">
-                        <strong>QR-Code scannen</strong>
-                        Ihre Gäste können den Chat sofort auf ihrem Smartphone öffnen
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="icon-step">
+          <div class="icon"><svg><use href="#i-phone"/></svg></div>
+          <div>
+            <strong>2. Gäste scannen → Chat öffnet sich sofort</strong>
+            <div class="small">Keine App, kein Login – direkt im Browser.</div>
+          </div>
+        </div>
 
-        <!-- Trust Section -->
-        <section class="marketing-section">
-            <h2 class="section-title">Warum unser digitaler Concierge?</h2>
-            <p class="section-subtitle">Die perfekte Lösung für moderne Hosts und anspruchsvolle Gäste</p>
-            
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <h3>Für Hosts (Vermieter & Agenturen)</h3>
-                    <ul class="benefit-list">
-                        <li>Mehr Umsatz durch Affiliate- und Partnerangebote</li>
-                        <li>Keine ständige Erreichbarkeit notwendig</li>
-                        <li>Eigene Tipps einfach einpflegen → personalisiertes Gästeerlebnis</li>
-                        <li>White Label ready - in deinem Branding</li>
-                    </ul>
-                </div>
-                
-                <div class="benefit-card">
-                    <h3>Für Gäste (Nutzer)</h3>
-                    <ul class="benefit-list">
-                        <li>Concierge-Service direkt am Smartphone, ohne App</li>
-                        <li>Sofortige Insider-Tipps für Essen, Ausflüge & Services</li>
-                        <li>Buchung mit 1 Klick – bequem, schnell, stressfrei</li>
-                        <li>24/7 verfügbar - auch nachts und am Wochenende</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
+        <div class="icon-step">
+          <div class="icon"><svg><use href="#i-db"/></svg></div>
+          <div>
+            <strong>3. Empfehlungen aus:</strong>
+            <ul>
+              <li>Lokaler Datenbank (vom Host gepflegt, persönliche Tipps)</li>
+              <li>Globaler Datenbank (Affiliate-Services, Partnerangebote)</li>
+            </ul>
+          </div>
+        </div>
 
-        <!-- How it Works -->
-        <section class="marketing-section">
-            <h2 class="section-title">So funktioniert's</h2>
-            <p class="section-subtitle">In vier einfachen Schritten zu mehr Umsatz und zufriedeneren Gästen</p>
-            
-            <div class="steps-grid">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h4>QR-Code platzieren</h4>
-                    <p>QR-Code im Apartment platzieren – fertig in 30 Sekunden</p>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h4>Gäste scannen</h4>
-                    <p>Gäste scannen → Chat öffnet sich sofort, ohne App-Download</p>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h4>Empfehlungen erhalten</h4>
-                    <p>Lokale Datenbank (deine Tipps) + Globale Datenbank (Affiliate-Services)</p>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <h4>Automatisch mitverdienen</h4>
-                    <p>
+        <div class="icon-step">
+          <div class="icon"><svg><use href="#i-euro"/></svg></div>
+          <div>
+            <strong>4. Gäste buchen – Host verdient automatisch mit</strong>
+            <div class="small">Mehr Umsatz ohne Mehrarbeit.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: Vorteile -->
+  <section id="vorteile">
+    <div class="container">
+      <span class="kicker">Vorteile</span>
+      <h2>Vorteile auf einen Blick</h2>
+
+      <div class="grid cols-2 cols-4" style="margin-top:14px">
+        <div class="benefit">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <svg width="22" height="22"><use href="#i-check"/></svg>
+            <strong>✅ Plug &amp; Play: In Minuten startklar</strong>
+          </div>
+          <div class="small">Einfach einrichten, sofort Nutzen.</div>
+        </div>
+
+        <div class="benefit">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <svg width="22" height="22"><use href="#i-check"/></svg>
+            <strong>✅ White-Label: In deinem Branding einsetzbar</strong>
+          </div>
+          <div class="small">Nahtlos zur Marke deiner Unterkunft.</div>
+        </div>
+
+        <div class="benefit">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <svg width="22" height="22"><use href="#i-check"/></svg>
+            <strong>✅ DSGVO-konform, gehostet in der EU</strong>
+          </div>
+          <div class="small">Rechtssicher &amp; vertrauenswürdig.</div>
+        </div>
+
+        <div class="benefit">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <svg width="22" height="22"><use href="#i-check"/></svg>
+            <strong>✅ Zusätzliche Einnahmen ohne Mehrarbeit</strong>
+          </div>
+          <div class="small">Automatisierte Provisionen durch Partnerangebote.</div>
+        </div>
+
+        <div class="benefit">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <svg width="22" height="22"><use href="#i-check"/></svg>
+            <strong>✅ Premium-Erlebnis, das deine Unterkunft von Airbnb-Standard abhebt</strong>
+          </div>
+          <div class="small">Begeisterte Gäste, bessere Bewertungen.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: CTA (Anchor #kontakt) -->
+  <section id="kontakt">
+    <div class="container">
+      <div class="cta">
+        <h3>Starte heute mit deinem digitalen Concierge</h3>
+        <p>Mach aus jedem Gast einen begeisterten Stammkunden – und verdiene dabei mehr. Kostenlos testen, keine Verpflichtung.</p>
+        <div class="actions">
+          <a class="btn btn-accent" href="#kontakt">Kostenlos testen</a>
+          <a class="btn btn-ghost" href="#warum">Mehr erfahren</a>
+        </div>
+
+        <!-- Mini Lead-Form (optional, rein statisch) -->
+        <form action="#" method="post" style="margin-top:18px;display:grid;gap:10px;grid-template-columns:1.4fr 1fr auto">
+          <input aria-label="Dein Name" required name="name" placeholder="Dein Name" style="padding:.9rem 1rem;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);outline:none" />
+          <input aria-label="E-Mail" required type="email" name="email" placeholder="E-Mail" style="padding:.9rem 1rem;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);outline:none" />
+          <button type="submit" class="btn btn-accent" style="white-space:nowrap">Jetzt kostenlos testen</button>
+        </form>
+        <div class="small" style="margin-top:8px">Mit Klick auf „Jetzt kostenlos testen“ erklärst du dich einverstanden, kontaktiert zu werden. Keine Verpflichtung, jederzeit widerrufbar.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+      <div>© 2025 Dein Concierge Micro-SaaS – DSGVO-konform &amp; made in EU</div>
+      <div class="links">
+        <a href="#" aria-label="Datenschutz">Datenschutz</a>
+        <span>·</span>
+        <a href="#" aria-label="Impressum">Impressum</a>
+        <span>·</span>
+        <a href="#kontakt" aria-label="Kontakt">Kontakt</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
