@@ -49,7 +49,9 @@
     .chat-close{background:transparent;border:none;color:#000;font-size:22px;font-weight:900;cursor:pointer;transition:.3s}
     .chat-close:hover{transform:rotate(90deg)}
     .chat-messages{flex:1;overflow-y:auto;padding:18px;background:rgba(5,5,5,.6);display:flex;flex-direction:column;gap:12px}
-    .msg{padding:12px 16px;border-radius:18px;max-width:85%;font-size:14px;line-height:1.5;animation:msgPop .3s ease}
+    .msg{padding:12px 16px;border-radius:18px;max-width:85%;font-size:14px;line-height:1.5;animation:msgPop .3s ease;word-wrap:break-word;overflow-wrap:anywhere}
+    .msg a{color:var(--acc-glow);text-decoration:underline;font-weight:700}
+    .msg a:hover{text-decoration:none;filter:brightness(1.1)}
     @keyframes msgPop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
     .user{background:linear-gradient(135deg, rgba(74,144,226,.2), rgba(74,144,226,.1));align-self:flex-end;color:#fff;border:1px solid rgba(74,144,226,.3)}
     .bot{background:rgba(255,255,255,.05);align-self:flex-start;color:#e2e8f0;border:1px solid rgba(255,255,255,.1)}
@@ -60,10 +62,10 @@
     .chat-send:hover{background:linear-gradient(135deg,var(--acc-glow),var(--acc-glow))}
     .qr-section{display:flex;align-items:center;justify-content:center;gap:28px;margin-top:22px;position:relative;z-index:2}
     .qr-wrapper{position:relative;width:var(--qr_size);height:var(--qr_size)}
-    .qr-container{position:absolute;inset:0;background:linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.88));border-radius:24px;padding:14px;box-shadow:0 20px 60px rgba(74,144,226,.35), inset 0 0 20px rgba(74,144,226,.1);display:grid;place-items:center;cursor:pointer;transition:.3s;animation:qrGlow 3s infinite;text-decoration:none}
+    .qr-container{position:absolute;inset:0;background:linear-gradient(135deg, rgba(255,255,255,.97), rgba(255,255,255,.9));border-radius:24px;padding:14px;box-shadow:0 20px 60px rgba(74,144,226,.35), inset 0 0 20px rgba(74,144,226,.1);display:grid;place-items:center;cursor:pointer;transition:.3s;animation:qrGlow 3s infinite;text-decoration:none}
     @keyframes qrGlow{0%,100%{box-shadow:0 20px 60px rgba(74,144,226,.3), inset 0 0 20px rgba(74,144,226,.1)}50%{box-shadow:0 20px 80px rgba(74,144,226,.5), inset 0 0 30px rgba(74,144,226,.2)}}
     .qr-container:hover{transform:scale(1.05)}
-    .qr-container img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges}
+    .qr-container img{display:block;width:100%;height:100%;object-fit:contain}
     .chat-bubble{position:absolute;bottom:-10px;right:-10px;width:var(--bubble_size);height:var(--bubble_size);background:linear-gradient(135deg,var(--acc),var(--acc-glow));border-radius:50%;display:grid;place-items:center;cursor:pointer;font-size:24px;box-shadow:0 10px 40px rgba(74,144,226,.5), inset 0 -3px 10px rgba(0,0,0,.2);transition:.3s;animation:bubblePulse 2s infinite;z-index:10}
     @keyframes bubblePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
     .chat-badge{position:absolute;top:-5px;right:-5px;background:#ff3366;color:#fff;font-size:12px;font-weight:bold;padding:4px 8px;border-radius:20px;display:none}
@@ -100,7 +102,7 @@
   </style>
 </head>
 <body>
-  <!-- Deko-Partikel -->
+  <!-- Partikel (Deko) -->
   <div class="particles">
     <div class="particle" style="left:10%;animation-delay:0s"></div>
     <div class="particle" style="left:20%;animation-delay:2s"></div>
@@ -221,16 +223,39 @@
   </footer>
 
   <script>
-    // ----- Chat: sendet Eingaben an deinen Webhook -----
+    // ----- Chat an deinen Webhook mit "pretty" Links -----
     const messagesEl = document.getElementById('inline-messages');
     const inputEl = document.getElementById('inline-input');
     const sendBtn = document.getElementById('inline-send');
     const webhookUrl = "https://automation.eudemonia-coaching.de/webhook/chat-webhook";
 
+    const escapeHTML = (str) =>
+      str.replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+    // Ersetzt URLs im Text durch klickbare, hübsche Links
+    function linkify(text){
+      // erst escapen, dann URLs erkennen
+      const safe = escapeHTML(String(text));
+      const urlRe = /((https?:\/\/|www\.)[^\s<]+)/gi;
+      return safe.replace(urlRe, (m) => {
+        const href = m.startsWith('http') ? m : `https://${m}`;
+        try {
+          const u = new URL(href);
+          const pretty = (u.hostname.replace(/^www\./,'') + (u.pathname.length>1 ? u.pathname : ''));
+          return `<a href="${href}" target="_blank" rel="noopener">${pretty}</a>`;
+        } catch { return m; }
+      });
+    }
+
     function addMsg(text, type='bot'){
       const div = document.createElement('div');
       div.className = 'msg ' + (type==='user' ? 'user':'bot');
-      div.textContent = text;
+      // Antworten als HTML (mit Linkify) ausgeben
+      if(type==='bot'){
+        div.innerHTML = linkify(text);
+      } else {
+        div.textContent = text;
+      }
       messagesEl.appendChild(div);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -244,6 +269,13 @@
       addMsg(text,'user');
       inputEl.value = '';
 
+      // kleiner Typing-Indicator
+      const typing = document.createElement('div');
+      typing.className = 'msg bot';
+      typing.textContent = '…';
+      messagesEl.appendChild(typing);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
       try {
         const res = await fetch(webhookUrl, {
           method:"POST",
@@ -251,8 +283,11 @@
           body: JSON.stringify({ message: text })
         });
         const data = await res.json().catch(()=> ({}));
-        addMsg(data.reply || data.message || "Antwort erhalten.", "bot");
+        const reply = data.reply || data.message || data.text || 'Antwort erhalten.';
+        typing.remove();
+        addMsg(reply, "bot");
       } catch(e){
+        typing.remove();
         addMsg("⚠️ Keine Verbindung zum Server. Bitte später erneut versuchen.", "bot");
       }
     }
@@ -260,16 +295,27 @@
     sendBtn.addEventListener('click', handleSend);
     inputEl.addEventListener('keydown', e => { if(e.key==="Enter") handleSend(); });
 
-    // ----- QR: öffnet die Chat-Sektion dieser Seite -----
+    // ----- QR sichtbar + Fallback -----
     const qrImg = document.getElementById('apt-qr-img');
-    const absoluteChatUrl = (location.origin + location.pathname + '#openChat')
-      .replace(/\/+#/,'/#'); // kleine Bereinigung für doppelte Slashes
-    // Google Charts QR
-    qrImg.src = "https://chart.googleapis.com/chart?cht=qr&chs=240x240&chld=M|0&chl=" + encodeURIComponent(absoluteChatUrl);
+    const qrAnchor = document.getElementById('apt-qr');
+    const pageChatUrl = (location.origin + location.pathname + '#openChat').replace(/\/+#/,'/#');
 
-    // Bubble-Click -> smooth scroll zum Chat
+    // Primär: Google Charts
+    const primaryQR = "https://chart.googleapis.com/chart?cht=qr&chs=260x260&chld=M|0&chl=" + encodeURIComponent(pageChatUrl);
+    // Fallback: qrserver.com
+    const fallbackQR = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(pageChatUrl);
+
+    qrImg.src = primaryQR;
+    qrImg.onerror = () => { qrImg.src = fallbackQR; };
+    // Klick/Scan -> scrollt zum Chat (bei Mobile aus einem neuen Tab wieder zurück)
+    qrAnchor.addEventListener('click', (e)=>{
+      const el = document.getElementById('openChat');
+      if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(()=>inputEl.focus(),350); }
+    });
+
+    // Bubble-Click -> wie QR
     document.getElementById('bubble-btn').addEventListener('click', () => {
-      document.getElementById('apt-qr').click();
+      qrAnchor.click();
     });
 
     // Smooth scroll für interne Anker
