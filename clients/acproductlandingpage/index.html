@@ -102,7 +102,7 @@
   </style>
 </head>
 <body>
-  <!-- Partikel (Deko) -->
+  <!-- Partikel -->
   <div class="particles">
     <div class="particle" style="left:10%;animation-delay:0s"></div>
     <div class="particle" style="left:20%;animation-delay:2s"></div>
@@ -148,7 +148,6 @@
         <!-- QR -->
         <div class="qr-section">
           <div class="qr-wrapper">
-            <!-- QR öffnet die Chat-Sektion dieser Seite -->
             <a class="qr-container" id="apt-qr" href="#openChat" title="Scannen zum Öffnen des Chats">
               <img id="apt-qr-img" alt="QR zum Öffnen des Chats"/>
             </a>
@@ -222,20 +221,21 @@
     </div>
   </footer>
 
+  <!-- Dein Mini-Snippet, unsichtbar eingebunden (keine Design-Änderung) -->
+  <div id="concierge-widget" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;height:0;width:0;overflow:hidden" aria-hidden="true">
+    <label for="concierge-q">Frage an den Concierge</label>
+    <input id="concierge-q" placeholder="Ihre Frage …">
+    <button id="concierge-send">Senden</button>
+    <pre id="concierge-out"></pre>
+  </div>
+
   <script>
-    // ----- Chat an deinen Webhook mit "pretty" Links -----
-    const messagesEl = document.getElementById('inline-messages');
-    const inputEl = document.getElementById('inline-input');
-    const sendBtn = document.getElementById('inline-send');
-    const webhookUrl = "https://automation.eudemonia-coaching.de/webhook/chat-webhook";
-
+    // ---------- Hilfsfunktionen (Linkify + Escape) ----------
     const escapeHTML = (str) =>
-      str.replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+      String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-    // Ersetzt URLs im Text durch klickbare, hübsche Links
     function linkify(text){
-      // erst escapen, dann URLs erkennen
-      const safe = escapeHTML(String(text));
+      const safe = escapeHTML(text ?? '');
       const urlRe = /((https?:\/\/|www\.)[^\s<]+)/gi;
       return safe.replace(urlRe, (m) => {
         const href = m.startsWith('http') ? m : `https://${m}`;
@@ -247,26 +247,48 @@
       });
     }
 
+    // ---------- Chat UI Elemente ----------
+    const messagesEl = document.getElementById('inline-messages');
+    const inputEl    = document.getElementById('inline-input');
+    const sendBtn    = document.getElementById('inline-send');
+
+    // ---------- Webhook Ziel ----------
+    const WEBHOOK = 'https://automation.eudemonia-coaching.de/webhook/chat-webhook';
+
+    // ---------- Nachrichten Rendering ----------
     function addMsg(text, type='bot'){
       const div = document.createElement('div');
       div.className = 'msg ' + (type==='user' ? 'user':'bot');
-      // Antworten als HTML (mit Linkify) ausgeben
-      if(type==='bot'){
-        div.innerHTML = linkify(text);
-      } else {
-        div.textContent = text;
-      }
+      if(type==='bot'){ div.innerHTML = linkify(text); }
+      else { div.textContent = text; }
       messagesEl.appendChild(div);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    // Start-Info
+    // Seed
     addMsg('Hi! Ich bin dein digitaler Concierge. Frag mich nach Check-in, Hausregeln, Top-Restaurants, Ausflügen oder Services. 😊');
 
+    // ---------- Zentrale Sendefunktion (nutzt dein Payload-Schema) ----------
+    async function sendToWebhook(question){
+      const res = await fetch(WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, url: location.href, source: 'inline' })
+      });
+      const raw = await res.text();
+      let data; try { data = JSON.parse(raw); } catch {}
+      // breite Kompatibilität der möglichen Felder
+      const text = (data && (data.output || data.message || data.text ||
+                    (data.choices?.[0]?.message?.content) || data.choices?.[0]?.text))
+                   || raw;
+      return String(text || '(Keine Antwort)').trim();
+    }
+
+    // ---------- UI-Handler (Chat) ----------
     async function handleSend(){
-      const text = inputEl.value.trim();
-      if(!text) return;
-      addMsg(text,'user');
+      const q = inputEl.value.trim();
+      if(!q) return;
+      addMsg(q, 'user');
       inputEl.value = '';
 
       // kleiner Typing-Indicator
@@ -276,47 +298,54 @@
       messagesEl.appendChild(typing);
       messagesEl.scrollTop = messagesEl.scrollHeight;
 
-      try {
-        const res = await fetch(webhookUrl, {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({ message: text })
-        });
-        const data = await res.json().catch(()=> ({}));
-        const reply = data.reply || data.message || data.text || 'Antwort erhalten.';
+      try{
+        const reply = await sendToWebhook(q);
         typing.remove();
-        addMsg(reply, "bot");
+        addMsg(reply, 'bot');
       } catch(e){
         typing.remove();
-        addMsg("⚠️ Keine Verbindung zum Server. Bitte später erneut versuchen.", "bot");
+        addMsg('⚠️ Keine Verbindung zum Server. Bitte später erneut versuchen.', 'bot');
       }
     }
 
     sendBtn.addEventListener('click', handleSend);
     inputEl.addEventListener('keydown', e => { if(e.key==="Enter") handleSend(); });
 
-    // ----- QR sichtbar + Fallback -----
+    // ---------- QR sichtbar + Fallback ----------
     const qrImg = document.getElementById('apt-qr-img');
     const qrAnchor = document.getElementById('apt-qr');
     const pageChatUrl = (location.origin + location.pathname + '#openChat').replace(/\/+#/,'/#');
-
-    // Primär: Google Charts
     const primaryQR = "https://chart.googleapis.com/chart?cht=qr&chs=260x260&chld=M|0&chl=" + encodeURIComponent(pageChatUrl);
-    // Fallback: qrserver.com
     const fallbackQR = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(pageChatUrl);
-
     qrImg.src = primaryQR;
     qrImg.onerror = () => { qrImg.src = fallbackQR; };
-    // Klick/Scan -> scrollt zum Chat (bei Mobile aus einem neuen Tab wieder zurück)
+
     qrAnchor.addEventListener('click', (e)=>{
       const el = document.getElementById('openChat');
       if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(()=>inputEl.focus(),350); }
     });
+    document.getElementById('bubble-btn').addEventListener('click', () => qrAnchor.click());
 
-    // Bubble-Click -> wie QR
-    document.getElementById('bubble-btn').addEventListener('click', () => {
-      qrAnchor.click();
-    });
+    // ---------- Dein unsichtbares Mini-Snippet aktivieren (gleiche Logik) ----------
+    (()=>{
+      const $q   = document.getElementById('concierge-q');
+      const $btn = document.getElementById('concierge-send');
+      const $out = document.getElementById('concierge-out');
+
+      async function miniSend(){
+        const question = ($q?.value || '').trim();
+        if(!$q) return; // falls Element gar nicht existiert
+        if(!question){ $out.textContent = 'Bitte Frage eingeben.'; return; }
+        try{
+          const reply = await sendToWebhook(question);
+          $out.textContent = reply;
+        }catch(e){
+          $out.textContent = 'Fehler: ' + (e?.message || e);
+        }
+      }
+      $btn?.addEventListener('click', miniSend);
+      $q?.addEventListener('keydown', e => { if(e.key === 'Enter') miniSend(); });
+    })();
 
     // Smooth scroll für interne Anker
     document.querySelectorAll('a[href^="#"]').forEach(a=>{
