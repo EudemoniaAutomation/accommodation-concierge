@@ -100,7 +100,7 @@
   </style>
 </head>
 <body>
-  <!-- Animated Particles -->
+  <!-- Deko-Partikel -->
   <div class="particles">
     <div class="particle" style="left:10%;animation-delay:0s"></div>
     <div class="particle" style="left:20%;animation-delay:2s"></div>
@@ -121,11 +121,11 @@
       <p class="hero-subtitle">Ein QR-Code im Apartment genügt – und deine Gäste genießen Premium-Service, während du automatisch mitverdienst.</p>
       <div class="cta-container">
         <a class="cta-primary" href="mailto:contact@eudemonia-coaching.de?subject=GPT%20bestellen%20%28inkl.%20Landingpage%29">✨ Jetzt kostenlos testen</a>
-        <a class="cta-secondary" href="#vorteile">Mehr erfahren</a>
+        <a class="cta-secondary" href="mailto:info@eudemonia-coaching.de">Mehr erfahren</a>
       </div>
     </section>
 
-    <!-- DEMO -->
+    <!-- DEMO / CHAT -->
     <section class="demo-section" id="openChat">
       <div class="demo-card">
         <h2 class="demo-title">Live-Demo – erlebe den Concierge</h2>
@@ -134,7 +134,7 @@
         <div class="chat-window" id="inline-chat">
           <div class="chat-header">
             <span>💬 Digitaler Concierge</span>
-            <button class="chat-close" id="inline-close" title="Minimieren" style="display:none">×</button>
+            <button class="chat-close" id="inline-close" style="display:none">×</button>
           </div>
           <div class="chat-messages" id="inline-messages"></div>
           <div class="chat-input-area">
@@ -146,12 +146,11 @@
         <!-- QR -->
         <div class="qr-section">
           <div class="qr-wrapper">
+            <!-- QR öffnet die Chat-Sektion dieser Seite -->
             <a class="qr-container" id="apt-qr" href="#openChat" title="Scannen zum Öffnen des Chats">
               <img id="apt-qr-img" alt="QR zum Öffnen des Chats"/>
             </a>
-            <div class="chat-bubble" id="bubble-btn" aria-label="Chat öffnen">💬
-              <span class="chat-badge" id="bubble-badge">1</span>
-            </div>
+            <div class="chat-bubble" id="bubble-btn" aria-label="Chat öffnen">💬</div>
           </div>
           <div class="qr-info">
             <strong>QR-Code scannen</strong>
@@ -196,30 +195,12 @@
       <p class="section-subtitle">Alles, was du brauchst, um deine Vermietung auf das nächste Level zu bringen</p>
 
       <div class="features-grid">
-        <div class="feature-item">
-          <div class="check-icon">✓</div>
-          <div class="feature-text">Plug &amp; Play – in Minuten startklar</div>
-        </div>
-        <div class="feature-item">
-          <div class="check-icon">✓</div>
-          <div class="feature-text">White-Label – in deinem Branding einsetzbar</div>
-        </div>
-        <div class="feature-item">
-          <div class="check-icon">✓</div>
-          <div class="feature-text">DSGVO-konform, in der EU gehostet</div>
-        </div>
-        <div class="feature-item">
-          <div class="check-icon">✓</div>
-          <div class="feature-text">Zusätzliche Einnahmen ohne Mehrarbeit</div>
-        </div>
-        <div class="feature-item">
-          <div class="check-icon">✓</div>
-          <div class="feature-text">Premium-Gästeerlebnis – Airbnb-Standard übertroffen</div>
-        </div>
-        <div class="feature-item">
-          <div class="check-icon">✓</div>
-          <div class="feature-text">24/7 Service – auch nachts &amp; am Wochenende</div>
-        </div>
+        <div class="feature-item"><div class="check-icon">✓</div><div class="feature-text">Plug &amp; Play – in Minuten startklar</div></div>
+        <div class="feature-item"><div class="check-icon">✓</div><div class="feature-text">White-Label – in deinem Branding einsetzbar</div></div>
+        <div class="feature-item"><div class="check-icon">✓</div><div class="feature-text">DSGVO-konform, in der EU gehostet</div></div>
+        <div class="feature-item"><div class="check-icon">✓</div><div class="feature-text">Zusätzliche Einnahmen ohne Mehrarbeit</div></div>
+        <div class="feature-item"><div class="check-icon">✓</div><div class="feature-text">Franchise Partnerprogramm Option</div></div>
+        <div class="feature-item"><div class="check-icon">✓</div><div class="feature-text">24/7 Service – auch nachts &amp; am Wochenende</div></div>
       </div>
 
       <div class="cta-container">
@@ -240,62 +221,58 @@
   </footer>
 
   <script>
-    // --- Simple demo chat ---
+    // ----- Chat: sendet Eingaben an deinen Webhook -----
     const messagesEl = document.getElementById('inline-messages');
     const inputEl = document.getElementById('inline-input');
     const sendBtn = document.getElementById('inline-send');
+    const webhookUrl = "https://automation.eudemonia-coaching.de/webhook/chat-webhook";
 
     function addMsg(text, type='bot'){
       const div = document.createElement('div');
-      div.className = 'msg ' + (type === 'user' ? 'user' : 'bot');
+      div.className = 'msg ' + (type==='user' ? 'user':'bot');
       div.textContent = text;
       messagesEl.appendChild(div);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    // Seed message
+    // Start-Info
     addMsg('Hi! Ich bin dein digitaler Concierge. Frag mich nach Check-in, Hausregeln, Top-Restaurants, Ausflügen oder Services. 😊');
 
-    function replyTo(q){
-      const lower = q.toLowerCase();
-      if(lower.includes('essen') || lower.includes('restaurant')){
-        return 'Empfehlung in der Nähe: „Blue Harbor“ (Fisch & Meerblick) oder „Terra Nostra“ (mediterran). Reservierung? Ich übernehme.';
-      }
-      if(lower.includes('check') || lower.includes('ein') || lower.includes('check-in')){
-        return 'Check-in ist ab 15:00 Uhr möglich. Smart-Lock Code steht in deiner Buchungs-Mail. Brauchst du ihn erneut?';
-      }
-      if(lower.includes('hausregel') || lower.includes('ruhe')){
-        return 'Hausregeln kurz & knapp: Rauchen nur auf dem Balkon, Ruhezeit 22–7 Uhr, bitte Müll trennen. Danke 🙏';
-      }
-      if(lower.includes('ausflug') || lower.includes('strand') || lower.includes('tipps')){
-        return 'Top-Ausflüge: Küstenwanderweg, Altstadt-Tour, Bootstrip (Delfine). Willst du Tickets direkt hier im Chat?';
-      }
-      return 'Alles klar! Ich kümmere mich. Möchtest du Empfehlungen zu Essen, Ausflügen, Transport oder Late-Checkout?';
-    }
-
-    function handleSend(){
-      const v = inputEl.value.trim();
-      if(!v) return;
-      addMsg(v,'user');
+    async function handleSend(){
+      const text = inputEl.value.trim();
+      if(!text) return;
+      addMsg(text,'user');
       inputEl.value = '';
-      setTimeout(()=> addMsg(replyTo(v),'bot'), 500);
+
+      try {
+        const res = await fetch(webhookUrl, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json().catch(()=> ({}));
+        addMsg(data.reply || data.message || "Antwort erhalten.", "bot");
+      } catch(e){
+        addMsg("⚠️ Keine Verbindung zum Server. Bitte später erneut versuchen.", "bot");
+      }
     }
 
     sendBtn.addEventListener('click', handleSend);
-    inputEl.addEventListener('keydown', e => { if(e.key === 'Enter') handleSend(); });
+    inputEl.addEventListener('keydown', e => { if(e.key==="Enter") handleSend(); });
 
-    // --- QR code that opens the chat anchor on this page ---
+    // ----- QR: öffnet die Chat-Sektion dieser Seite -----
     const qrImg = document.getElementById('apt-qr-img');
-    const href = location.origin + location.pathname + '#openChat';
-    const qrUrl = 'https://chart.googleapis.com/chart?cht=qr&chs=240x240&chld=M|0&chl=' + encodeURIComponent(href);
-    qrImg.src = qrUrl;
+    const absoluteChatUrl = (location.origin + location.pathname + '#openChat')
+      .replace(/\/+#/,'/#'); // kleine Bereinigung für doppelte Slashes
+    // Google Charts QR
+    qrImg.src = "https://chart.googleapis.com/chart?cht=qr&chs=240x240&chld=M|0&chl=" + encodeURIComponent(absoluteChatUrl);
 
-    // Bubble opens chat smoothly
+    // Bubble-Click -> smooth scroll zum Chat
     document.getElementById('bubble-btn').addEventListener('click', () => {
       document.getElementById('apt-qr').click();
     });
 
-    // Smooth scroll for same-page anchors
+    // Smooth scroll für interne Anker
     document.querySelectorAll('a[href^="#"]').forEach(a=>{
       a.addEventListener('click', (e)=>{
         const id = a.getAttribute('href').slice(1);
@@ -303,8 +280,7 @@
         if(el){
           e.preventDefault();
           el.scrollIntoView({behavior:'smooth', block:'start'});
-          // focus input if chat
-          if(id === 'openChat'){ setTimeout(()=> document.getElementById('inline-input').focus(), 400); }
+          if(id === 'openChat'){ setTimeout(()=> inputEl.focus(), 350); }
         }
       });
     });
