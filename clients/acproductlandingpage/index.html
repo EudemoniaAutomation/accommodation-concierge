@@ -12,6 +12,8 @@
       --acc:#4A90E2;--acc-glow:#6BA3F5;--acc-dark:#2E5C8A;
       --card:rgba(15,15,15,.8);--card-border:rgba(74,144,226,.15);--glass:rgba(255,255,255,.03);
       --qr_size:180px;--bubble_size:62px;
+      /* Wallpaper hinter dem Chat */
+      --wall2:url('https://d1yei2z3i6k35z.cloudfront.net/12820362/68a47346dc795_ModernCozyLivingRoom.jpeg?width=1920');
     }
     body::before{
       content:"";position:fixed;inset:0;
@@ -41,6 +43,14 @@
     .demo-section{margin:60px 0;animation:fadeInUp 1.2s ease}
     .demo-card{background:linear-gradient(135deg,var(--card), rgba(74,144,226,.02));border:1px solid var(--card-border);border-radius:30px;padding:40px 30px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;overflow:hidden;text-align:center}
     .demo-card::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,var(--acc-glow),transparent);opacity:.1;animation:shimmer 3s infinite}
+    /* Wallpaper-Fläche in der Demo-Card (hinter Chat) */
+    .wallpaper{
+      position:absolute;inset:16px;border-radius:28px;z-index:1;
+      background-image:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.55)), var(--wall2);
+      background-size:cover;background-position:center;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .demo-title,.demo-subtitle,.chat-window,.qr-section{position:relative;z-index:2}
     @keyframes shimmer{0%{transform:translateX(-100%) translateY(-100%) rotate(45deg)}100%{transform:translateX(100%) translateY(100%) rotate(45deg)}}
     .demo-title{font-size:2rem;font-weight:800;margin-bottom:12px;position:relative;z-index:2}
     .demo-subtitle{color:var(--muted);margin-bottom:26px;font-size:1.05rem;position:relative;z-index:2}
@@ -122,7 +132,9 @@
       <h1>Dein digitaler Concierge – mehr Umsatz, weniger Aufwand, begeisterte Gäste</h1>
       <p class="hero-subtitle">Ein QR-Code im Apartment genügt – und deine Gäste genießen Premium-Service, während du automatisch mitverdienst.</p>
       <div class="cta-container">
-        <a class="cta-primary" href="mailto:contact@eudemonia-coaching.de?subject=GPT%20bestellen%20%28inkl.%20Landingpage%29">✨ Jetzt kostenlos testen</a>
+        <!-- Primärer CTA scrollt jetzt direkt zum Chat -->
+        <a class="cta-primary" href="#openChat">✨ Jetzt kostenlos testen</a>
+        <!-- Sekundärer CTA öffnet lokales Mail-Programm mit Empfänger -->
         <a class="cta-secondary" href="mailto:info@eudemonia-coaching.de">Mehr erfahren</a>
       </div>
     </section>
@@ -130,6 +142,9 @@
     <!-- DEMO / CHAT -->
     <section class="demo-section" id="openChat">
       <div class="demo-card">
+        <!-- Wallpaper hinter dem Chat -->
+        <div class="wallpaper" aria-hidden="true"></div>
+
         <h2 class="demo-title">Live-Demo – erlebe den Concierge</h2>
         <p class="demo-subtitle">Frag los: Check-in, Hausregeln, Ausstattung oder Tipps in der Umgebung. Der Accommodation Concierge hilft sofort.</p>
 
@@ -205,7 +220,7 @@
       </div>
 
       <div class="cta-container">
-        <a class="cta-primary" href="mailto:contact@eudemonia-coaching.de?subject=GPT%20bestellen%20%28inkl.%20Landingpage%29">GPT bestellen (inkl. Landingpage)</a>
+        <a class="cta-primary" href="#openChat">GPT bestellen (inkl. Landingpage)</a>
         <a class="cta-secondary" href="mailto:contact@eudemonia-coaching.de?subject=GPT%20bestellen%20%28ohne%20Landingpage%29">GPT bestellen (ohne Landingpage)</a>
       </div>
     </section>
@@ -221,7 +236,7 @@
     </div>
   </footer>
 
-  <!-- Dein Mini-Snippet, unsichtbar eingebunden (keine Design-Änderung) -->
+  <!-- Unsichtbares Mini-Snippet (keine Design-Änderung) -->
   <div id="concierge-widget" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;height:0;width:0;overflow:hidden" aria-hidden="true">
     <label for="concierge-q">Frage an den Concierge</label>
     <input id="concierge-q" placeholder="Ihre Frage …">
@@ -230,10 +245,9 @@
   </div>
 
   <script>
-    // ---------- Hilfsfunktionen (Linkify + Escape) ----------
+    // ---------- Hilfsfunktionen ----------
     const escapeHTML = (str) =>
       String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-
     function linkify(text){
       const safe = escapeHTML(text ?? '');
       const urlRe = /((https?:\/\/|www\.)[^\s<]+)/gi;
@@ -247,28 +261,22 @@
       });
     }
 
-    // ---------- Chat UI Elemente ----------
+    // ---------- Chat UI ----------
     const messagesEl = document.getElementById('inline-messages');
     const inputEl    = document.getElementById('inline-input');
     const sendBtn    = document.getElementById('inline-send');
+    const WEBHOOK    = 'https://automation.eudemonia-coaching.de/webhook/chat-webhook';
 
-    // ---------- Webhook Ziel ----------
-    const WEBHOOK = 'https://automation.eudemonia-coaching.de/webhook/chat-webhook';
-
-    // ---------- Nachrichten Rendering ----------
     function addMsg(text, type='bot'){
       const div = document.createElement('div');
       div.className = 'msg ' + (type==='user' ? 'user':'bot');
-      if(type==='bot'){ div.innerHTML = linkify(text); }
-      else { div.textContent = text; }
+      if(type==='bot'){ div.innerHTML = linkify(text); } else { div.textContent = text; }
       messagesEl.appendChild(div);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    // Seed
     addMsg('Hi! Ich bin dein digitaler Concierge. Frag mich nach Check-in, Hausregeln, Top-Restaurants, Ausflügen oder Services. 😊');
 
-    // ---------- Zentrale Sendefunktion (nutzt dein Payload-Schema) ----------
     async function sendToWebhook(question){
       const res = await fetch(WEBHOOK, {
         method: 'POST',
@@ -277,34 +285,27 @@
       });
       const raw = await res.text();
       let data; try { data = JSON.parse(raw); } catch {}
-      // breite Kompatibilität der möglichen Felder
       const text = (data && (data.output || data.message || data.text ||
                     (data.choices?.[0]?.message?.content) || data.choices?.[0]?.text))
                    || raw;
       return String(text || '(Keine Antwort)').trim();
     }
 
-    // ---------- UI-Handler (Chat) ----------
     async function handleSend(){
       const q = inputEl.value.trim();
       if(!q) return;
-      addMsg(q, 'user');
+      addMsg(q,'user');
       inputEl.value = '';
 
-      // kleiner Typing-Indicator
       const typing = document.createElement('div');
-      typing.className = 'msg bot';
-      typing.textContent = '…';
-      messagesEl.appendChild(typing);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+      typing.className = 'msg bot'; typing.textContent = '…';
+      messagesEl.appendChild(typing); messagesEl.scrollTop = messagesEl.scrollHeight;
 
       try{
         const reply = await sendToWebhook(q);
-        typing.remove();
-        addMsg(reply, 'bot');
-      } catch(e){
-        typing.remove();
-        addMsg('⚠️ Keine Verbindung zum Server. Bitte später erneut versuchen.', 'bot');
+        typing.remove(); addMsg(reply,'bot');
+      }catch(e){
+        typing.remove(); addMsg('⚠️ Keine Verbindung zum Server. Bitte später erneut versuchen.','bot');
       }
     }
 
@@ -317,31 +318,24 @@
     const pageChatUrl = (location.origin + location.pathname + '#openChat').replace(/\/+#/,'/#');
     const primaryQR = "https://chart.googleapis.com/chart?cht=qr&chs=260x260&chld=M|0&chl=" + encodeURIComponent(pageChatUrl);
     const fallbackQR = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(pageChatUrl);
-    qrImg.src = primaryQR;
-    qrImg.onerror = () => { qrImg.src = fallbackQR; };
-
+    qrImg.src = primaryQR; qrImg.onerror = () => { qrImg.src = fallbackQR; };
     qrAnchor.addEventListener('click', (e)=>{
       const el = document.getElementById('openChat');
       if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(()=>inputEl.focus(),350); }
     });
     document.getElementById('bubble-btn').addEventListener('click', () => qrAnchor.click());
 
-    // ---------- Dein unsichtbares Mini-Snippet aktivieren (gleiche Logik) ----------
+    // ---------- Unsichtbares Mini-Snippet (gleiche Logik) ----------
     (()=>{
       const $q   = document.getElementById('concierge-q');
       const $btn = document.getElementById('concierge-send');
       const $out = document.getElementById('concierge-out');
-
       async function miniSend(){
         const question = ($q?.value || '').trim();
-        if(!$q) return; // falls Element gar nicht existiert
+        if(!$q) return;
         if(!question){ $out.textContent = 'Bitte Frage eingeben.'; return; }
-        try{
-          const reply = await sendToWebhook(question);
-          $out.textContent = reply;
-        }catch(e){
-          $out.textContent = 'Fehler: ' + (e?.message || e);
-        }
+        try{ $out.textContent = await sendToWebhook(question); }
+        catch(e){ $out.textContent = 'Fehler: ' + (e?.message || e); }
       }
       $btn?.addEventListener('click', miniSend);
       $q?.addEventListener('keydown', e => { if(e.key === 'Enter') miniSend(); });
