@@ -2,38 +2,71 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Webhook Test Chat</title>
+  <title>Webhook Tester</title>
 </head>
 <body>
-  <h3>Webhook Test Chat</h3>
-  <input type="text" id="chatInput" placeholder="Schreib etwas..." style="width:300px;">
-  <button id="sendBtn">Senden</button>
-
-  <pre id="response"></pre>
+  <div id="concierge-widget" style="max-width:480px;margin:24px auto;padding:16px;border:1px solid #ddd;border-radius:12px;font-family:system-ui,Arial;">
+    <div style="font-weight:600;margin-bottom:8px;">Test Webhook</div>
+    <div style="display:flex;gap:8px;">
+      <input id="concierge-q" type="text" placeholder="Ihre Frage ..." style="flex:1;padding:10px;border:1px solid #bbb;border-radius:8px" />
+      <button id="concierge-send" style="padding:10px 14px;border:0;border-radius:8px;background:#111;color:#fff;cursor:pointer">Senden</button>
+    </div>
+    <pre id="concierge-out" style="white-space:pre-wrap;margin-top:12px;background:#f8f8f8;padding:12px;border-radius:8px;min-height:48px"></pre>
+  </div>
 
   <script>
-    document.getElementById("sendBtn").addEventListener("click", async function() {
-      const message = document.getElementById("chatInput").value;
+    (function () {
+      const WEBHOOK = 'https://automation.eudemonia-coaching.de/webhook-test/89486b16-646d-48d0-bfb0-e72f726f38d4';
+      const $q   = document.getElementById('concierge-q');
+      const $btn = document.getElementById('concierge-send');
+      const $out = document.getElementById('concierge-out');
 
-      const payload = {
-        name_whatsapp: "Test User",
-        service_selection: "Chat-Test",
-        selected_date: new Date().toISOString().split("T")[0],
-        selected_time: new Date().toTimeString().split(" ")[0].slice(0,5),
-        guest_count: 1,
-        location: "Test-Ort",
-        preferences: message
-      };
+      async function sendConcierge(question) {
+        const payload = {
+          question: String(question || '').trim(),
+          url: window.location.href,
+          source: 'tester'
+        };
+        if (!payload.question) {
+          $out.textContent = 'Bitte geben Sie eine Frage ein.';
+          return;
+        }
 
-      const res = await fetch("https://automation.eudemonia-coaching.de/webhook-test/89486b16-646d-48d0-bfb0-e72f726f38d4", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+        $btn.disabled = true;
+        const oldText = $btn.textContent;
+        $btn.textContent = 'Senden …';
 
-      const text = await res.text();
-      document.getElementById("response").textContent = text;
-    });
+        try {
+          const res = await fetch(WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            referrerPolicy: 'no-referrer-when-downgrade',
+            body: JSON.stringify(payload)
+          });
+
+          const raw = await res.text();
+          let output;
+          try { output = JSON.parse(raw); } catch { output = { output: raw }; }
+
+          const text =
+            output.output ||
+            output.message ||
+            output.text ||
+            (output.choices && output.choices[0] && (output.choices[0].message?.content || output.choices[0].text)) ||
+            raw;
+
+          $out.textContent = String(text || '').trim() || '(Keine Antwort erhalten)';
+        } catch (err) {
+          $out.textContent = 'Fehler beim Senden: ' + (err?.message || String(err));
+        } finally {
+          $btn.disabled = false;
+          $btn.textContent = oldText;
+        }
+      }
+
+      $btn.addEventListener('click', () => sendConcierge($q.value));
+      $q.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendConcierge($q.value); });
+    })();
   </script>
 </body>
 </html>
