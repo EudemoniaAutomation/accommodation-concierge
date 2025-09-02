@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Webhook Test</title>
+</head>
+<body>
+  <h2>n8n Webhook Test</h2>
+  <form id="testForm">
+    <label>Name (WhatsApp):</label><br>
+    <input type="text" name="name_whatsapp" value="Max Mustermann"><br><br>
+
+    <label>Service Selection:</label><br>
+    <input type="text" name="service_selection" value="Hotelbuchung"><br><br>
+
+    <label>Date:</label><br>
+    <input type="date" name="selected_date" value="2025-09-10"><br><br>
+
+    <label>Time:</label><br>
+    <input type="time" name="selected_time" value="18:00"><br><br>
+
+    <label>Guests:</label><br>
+    <input type="number" name="guest_count" value="2"><br><br>
+
+    <label>Location:</label><br>
+    <input type="text" name="location" value="Berlin"><br><br>
+
+    <label>Preferences:</label><br>
+    <input type="text" name="preferences" value="ruhiges Zimmer mit Balkon"><br><br>
+
+    <button type="submit">Send to Webhook</button>
+  </form>
+
+  <pre id="response"></pre>
+
+  <script>
+    document.getElementById("testForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const payload = {};
+      formData.forEach((value, key) => payload[key] = value);
+
+      const res = await fetch("https://automation.eudemonia-coaching.de/webhook-test/89486b16-646d-48d0-bfb0-e72f726f38d4", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const text = await res.text();
+      document.getElementById("response").textContent = text;
+    });
+  </script>
+</body>
+</html>
