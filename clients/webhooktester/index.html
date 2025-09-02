@@ -2,44 +2,28 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Webhook Test</title>
+  <title>Webhook Test Chat</title>
 </head>
 <body>
-  <h2>n8n Webhook Test</h2>
-  <form id="testForm">
-    <label>Name (WhatsApp):</label><br>
-    <input type="text" name="name_whatsapp" value="Max Mustermann"><br><br>
-
-    <label>Service Selection:</label><br>
-    <input type="text" name="service_selection" value="Hotelbuchung"><br><br>
-
-    <label>Date:</label><br>
-    <input type="date" name="selected_date" value="2025-09-10"><br><br>
-
-    <label>Time:</label><br>
-    <input type="time" name="selected_time" value="18:00"><br><br>
-
-    <label>Guests:</label><br>
-    <input type="number" name="guest_count" value="2"><br><br>
-
-    <label>Location:</label><br>
-    <input type="text" name="location" value="Berlin"><br><br>
-
-    <label>Preferences:</label><br>
-    <input type="text" name="preferences" value="ruhiges Zimmer mit Balkon"><br><br>
-
-    <button type="submit">Send to Webhook</button>
-  </form>
+  <h3>Webhook Test Chat</h3>
+  <input type="text" id="chatInput" placeholder="Schreib etwas..." style="width:300px;">
+  <button id="sendBtn">Senden</button>
 
   <pre id="response"></pre>
 
   <script>
-    document.getElementById("testForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
+    document.getElementById("sendBtn").addEventListener("click", async function() {
+      const message = document.getElementById("chatInput").value;
 
-      const formData = new FormData(e.target);
-      const payload = {};
-      formData.forEach((value, key) => payload[key] = value);
+      const payload = {
+        name_whatsapp: "Test User",
+        service_selection: "Chat-Test",
+        selected_date: new Date().toISOString().split("T")[0],
+        selected_time: new Date().toTimeString().split(" ")[0].slice(0,5),
+        guest_count: 1,
+        location: "Test-Ort",
+        preferences: message
+      };
 
       const res = await fetch("https://automation.eudemonia-coaching.de/webhook-test/89486b16-646d-48d0-bfb0-e72f726f38d4", {
         method: "POST",
