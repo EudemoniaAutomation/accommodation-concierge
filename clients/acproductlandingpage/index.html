@@ -99,6 +99,10 @@
     .footer-links{margin-top:16px}
     .footer-links a{color:var(--muted);text-decoration:none;margin:0 14px;transition:color .3s ease}
     .footer-links a:hover{color:var(--acc)}
+    /* dezente Rechts-Fußzeile direkt unter den Buttons */
+    .legal-line{ text-align:center; margin-top:12px; font-size:12px; color:var(--muted); }
+    .legal-line a{ color:var(--muted); text-decoration:none; }
+    .legal-line a:hover{ color:var(--acc); text-decoration:underline; }
     @media (max-width:900px){.steps-grid{grid-template-columns:repeat(2,1fr)}}
     @media (max-width:640px){
       .hero h1{font-size:2.5rem}.hero-subtitle{font-size:1.1rem}
@@ -220,10 +224,13 @@
       </div>
 
       <div class="cta-container">
-        <!-- geändert: Text + Stripe-Link -->
         <a class="cta-primary" href="https://buy.stripe.com/dRmdRab5I2gycqN3nA0Jq00">GPT bestellen (mit Landingpage)</a>
-        <!-- geändert: Stripe-Link für Button darunter -->
         <a class="cta-secondary" href="https://buy.stripe.com/aFaaEY0r4aN4cqN2jw0Jq01">GPT bestellen (ohne Landingpage)</a>
+      </div>
+
+      <!-- dezente Rechts-Fußzeile direkt unter den Buttons -->
+      <div class="legal-line">
+        <a href="https://www.eudemonia-coaching.de/legal" target="_blank" rel="noopener">Impressum | Datenschutzerklärung | AGB</a>
       </div>
     </section>
   </div>
@@ -236,11 +243,6 @@
       <a href="#vorteile">Vorteile</a>
       <a href="mailto:contact@eudemonia-coaching.de">Kontakt</a>
     </div>
-  </footer>
-
-  <!-- Zusätzliche Fußzeile ganz am Schluss -->
-  <footer>
-    <a href="https://www.eudemonia-coaching.de/legal" target="_blank" rel="noopener">Impressum | Datenschutzerklärung | AGB</a>
   </footer>
 
   <!-- Unsichtbares Mini-Snippet (keine Design-Änderung) -->
