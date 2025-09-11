@@ -498,7 +498,7 @@
 
     <script>
     (() => {
-        const webhookUrl = "https://automation.eudemonia-coaching.de/webhook/chat-webhook";
+        const webhookUrl = "https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150";
 
         // DOM refs
         const inline = {
