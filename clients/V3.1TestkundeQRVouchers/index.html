@@ -16,7 +16,7 @@
     :root{
       --bg:#000000; --ink:#ffffff; --muted:#94a3b8;
       --acc:#ff1044; --acc-glow:#ff3366;
-      --card:rgba(15,15,15,.8); --card-border:rgba(255,16,68,.15);
+      --card:rgba(15, 15, 15, 0.8); --card-border:rgba(255,16,68,.15);
       --qr_size:160px; /* größer */
       --bubble_size:56px;
     }
@@ -25,9 +25,9 @@
     body::before{
       content:""; position:fixed; inset:0;
       background:
-        radial-gradient(circle at 20% 50%, rgba(255, 16, 68, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255, 16, 68, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 20%, rgba(234, 51, 147, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 20% 50%, rgba(255,16,68,.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,16,68,.10) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(234,51,147,.08) 0%, transparent 40%),
         linear-gradient(180deg, #000 0%, #0a0a0a 100%);
       z-index:0; animation:backgroundShift 20s ease infinite;
     }
@@ -112,7 +112,7 @@
       border-radius:16px; padding:12px; text-decoration:none;
       display:grid; place-items:center; cursor:pointer;
       box-shadow:0 20px 60px rgba(255,16,68,.30), inset 0 0 20px rgba(255,16,68,.12);
-      /* kein Pulsieren mehr */
+      /* kein Pulsieren */
     }
     .qr-container:hover{ transform:scale(1.03); }
     .qr-container img{ width:100%; height:100%; object-fit:contain; image-rendering:pixelated; image-rendering:crisp-edges; }
@@ -276,60 +276,45 @@
     // ===== Helpers: sanitize + link handling =====
     const urlRegex = /\b(https?:\/\/[^\s<>]+[^\s<\.)])/gi;
 
-    // 1) HTML aus GPT entfernen, damit keine Anker-Attribute als Text auftauchen
+    // 1) HTML aus GPT entfernen (damit keine Anker-Attribute als Text auftauchen)
     function stripHtml(raw){
       if(!raw) return '';
-      // zuerst komplette Links entfernen und nur den sichtbaren Text behalten
+      // Anker-Tags: sichtbaren Text behalten
       let s = raw.replace(/<a\b[^>]*>(.*?)<\/a>/gi, (_m, inner) => inner);
-      // restliche Tags entfernen
+      // sonstige Tags entfernen
       s = s.replace(/<[^>]+>/g, '');
       return s;
     }
 
     function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-    function normalizeUrl(u){
-      try{
-        const x = new URL(u); x.hash='';
-        ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid'].forEach(p=>x.searchParams.delete(p));
-        let href = x.toString(); if(href.endsWith('/')) href = href.slice(0,-1);
-        return href;
-      }catch{ return u; }
-    }
 
     // Name + URL → "Name Link" (nur "Link" ist anklickbar)
     // Erfasst: "Name (https://…)", "Name - https://…", "Name: https://…", "Name – https://…"
     function nameLinkify(rawText){
-      const text = stripHtml(rawText); // <-- wichtig
-      let safe = escapeHtml(text || '');
-      const replacedSet = new Set(); // normalisierte URLs, die schon verarbeitet wurden
+      const text = stripHtml(rawText);
+      let html = escapeHtml(text || '');
 
+      // 1) Name+URL Muster: erzeugt echte <a>-Tags
       const patterns = [
         /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:\(|（)\s*(https?:\/\/[^\s<>]+[^\s<\.)])\s*(?:\)|）)/g,
         /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:[–—-]|:)\s*(https?:\/\/[^\s<>]+[^\s<\.)])/g
       ];
-
       function makeNamePlusLink(name, hrefRaw){
-        const hrefNorm = normalizeUrl(hrefRaw);
-        replacedSet.add(hrefNorm);
-        const link = `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">Link</a>`;
-        return `${escapeHtml(name.trim())} ${link}`;
+        const safeName = escapeHtml(name.trim());
+        return `${safeName} <a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">Link</a>`;
       }
+      patterns.forEach(re => { html = html.replace(re, (_m, name, url) => makeNamePlusLink(name, url)); });
 
-      // 1) Name+URL-Muster zuerst ersetzen
-      patterns.forEach(re => {
-        safe = safe.replace(re, (_m, name, url) => makeNamePlusLink(name, url));
-      });
+      // 2) Übrige nackte URLs → nur in Bereichen außerhalb bestehender <a>-Tags in "Link" verwandeln
+      html = html
+        .split(/(<a\b[^>]*>.*?<\/a>)/gi)
+        .map(seg => {
+          if (/^<a\b/i.test(seg)) return seg; // existierender Anchor unverändert
+          return seg.replace(urlRegex, (hrefRaw) => `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">Link</a>`);
+        })
+        .join('');
 
-      // 2) Verbleibende nackte URLs → nur "Link"
-      safe = safe.replace(urlRegex, (match) => {
-        const hrefRaw = match.replace(/&amp;/g,'&');
-        const hrefNorm = normalizeUrl(hrefRaw);
-        if (replacedSet.has(hrefNorm)) return ''; // bereits über Name ersetzt
-        const link = `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">Link</a>`;
-        return link;
-      });
-
-      return safe;
+      return html;
     }
 
     // DOM helpers
