@@ -93,6 +93,24 @@
     .user{ background:linear-gradient(135deg, rgba(255,16,68,.2), rgba(255,16,68,.1)); align-self:flex-end; color:#fff; border:1px solid rgba(255,16,68,.3); }
     .bot{ background:rgba(255,255,255,.05); align-self:flex-start; color:#e2e8f0; border:1px solid rgba(255,255,255,.1); }
 
+    /* Rich content in bot messages */
+    .msg.bot p { margin: 0 0 .5rem 0; }
+    .msg.bot ul { margin: .25rem 0 .5rem 1.25rem; padding: 0; }
+    .msg.bot li { margin: .15rem 0; }
+
+    /* Typing indicator */
+    .typing { display:flex; gap:6px; align-items:center; }
+    .dot {
+      width:6px; height:6px; border-radius:50%;
+      background:#e2e8f0; opacity:.6; animation: bounce 1s infinite ease-in-out;
+    }
+    .dot:nth-child(2){ animation-delay:.15s; }
+    .dot:nth-child(3){ animation-delay:.3s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity:.4; }
+      40% { transform: translateY(-6px); opacity:1; }
+    }
+
     .chat-input-area{ display:flex; border-top:1px solid var(--card-border); background:rgba(10,10,10,.9); padding:0; }
     .chat-input{ flex:1; border:none; padding:18px 20px; font-size:16px; background:transparent; color:#fff; outline:none; }
     .chat-input::placeholder{ color:rgba(148,163,184,.7); }
@@ -112,7 +130,6 @@
       border-radius:16px; padding:12px; text-decoration:none;
       display:grid; place-items:center; cursor:pointer;
       box-shadow:0 20px 60px rgba(255,16,68,.30), inset 0 0 20px rgba(255,16,68,.12);
-      /* kein Pulsieren */
     }
     .qr-container:hover{ transform:scale(1.03); }
     .qr-container img{ width:100%; height:100%; object-fit:contain; image-rendering:pixelated; image-rendering:crisp-edges; }
@@ -273,57 +290,112 @@
     window.addEventListener('hashchange', tryOpenFromUrl);
     tryOpenFromUrl();
 
-    // ===== Helpers: sanitize + link handling =====
+    // ===== Helpers: sanitize + link + mobile formatting =====
     const urlRegex = /\b(https?:\/\/[^\s<>]+[^\s<\.)])/gi;
 
-    // 1) HTML aus GPT entfernen (damit keine Anker-Attribute als Text auftauchen)
     function stripHtml(raw){
       if(!raw) return '';
-      // Anker-Tags: sichtbaren Text behalten
       let s = raw.replace(/<a\b[^>]*>(.*?)<\/a>/gi, (_m, inner) => inner);
-      // sonstige Tags entfernen
       s = s.replace(/<[^>]+>/g, '');
       return s;
     }
-
     function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-    // Name + URL → "Name Link" (nur "Link" ist anklickbar)
-    // Erfasst: "Name (https://…)", "Name - https://…", "Name: https://…", "Name – https://…"
-    function nameLinkify(rawText){
-      const text = stripHtml(rawText);
+    // Name (URL) -> "Name Link"; then convert remaining naked URLs to "Link"
+    function linkifyNamesAndUrls(text){
       let html = escapeHtml(text || '');
-
-      // 1) Name+URL Muster: erzeugt echte <a>-Tags
       const patterns = [
         /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:\(|（)\s*(https?:\/\/[^\s<>]+[^\s<\.)])\s*(?:\)|）)/g,
         /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:[–—-]|:)\s*(https?:\/\/[^\s<>]+[^\s<\.)])/g
       ];
-      function makeNamePlusLink(name, hrefRaw){
-        const safeName = escapeHtml(name.trim());
-        return `${safeName} <a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">Link</a>`;
+      function makeAnchor(name, url){
+        return `${escapeHtml(name.trim())} <a href="${url}" target="_blank" rel="noopener noreferrer">Link</a>`;
       }
-      patterns.forEach(re => { html = html.replace(re, (_m, name, url) => makeNamePlusLink(name, url)); });
+      patterns.forEach(re => { html = html.replace(re, (_m, name, url) => makeAnchor(name, url)); });
 
-      // 2) Übrige nackte URLs → nur in Bereichen außerhalb bestehender <a>-Tags in "Link" verwandeln
+      // only replace naked URLs in non-anchor segments
       html = html
         .split(/(<a\b[^>]*>.*?<\/a>)/gi)
-        .map(seg => {
-          if (/^<a\b/i.test(seg)) return seg; // existierender Anchor unverändert
-          return seg.replace(urlRegex, (hrefRaw) => `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">Link</a>`);
-        })
+        .map(seg => /^<a\b/i.test(seg) ? seg : seg.replace(urlRegex, (u)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">Link</a>`))
         .join('');
 
       return html;
     }
 
+    // Markdown-light -> HTML (paragraphs + bullets)
+    function mdLightToHtml(text){
+      // normalize line endings
+      const t = text.replace(/\r\n/g, '\n');
+      const lines = t.split('\n');
+
+      // group into paragraphs / lists
+      const chunks = [];
+      let currList = null;
+
+      const pushPara = (para) => { if(para.trim()) chunks.push({type:'p', text:para.trim()}); };
+      const pushList = () => { if(currList && currList.length){ chunks.push({type:'ul', items: currList}); } currList = null; };
+
+      for (let raw of lines){
+        const line = raw.trimEnd();
+        const bullet = /^[-•]\s+(.+)$/.exec(line);
+
+        if (bullet){
+          if(!currList) currList = [];
+          currList.push(bullet[1].trim());
+        } else if (line === ''){
+          pushList(); // close list
+          // blank line => paragraph break
+          chunks.push({type:'br'}); // will render as spacing
+        } else {
+          pushList();
+          // accumulate plain text paragraph lines
+          if (chunks.length && chunks[chunks.length-1].type==='p'){
+            chunks[chunks.length-1].text += ' ' + line.trim();
+          } else {
+            chunks.push({type:'p', text: line.trim()});
+          }
+        }
+      }
+      pushList();
+
+      // render to HTML
+      let html = '';
+      for (const c of chunks){
+        if (c.type === 'p'){
+          html += `<p>${linkifyNamesAndUrls(c.text)}</p>`;
+        } else if (c.type === 'ul'){
+          html += '<ul>' + c.items.map(it => `<li>${linkifyNamesAndUrls(it)}</li>`).join('') + '</ul>';
+        } else if (c.type === 'br'){
+          html += '<p style="margin: .35rem 0;"></p>';
+        }
+      }
+      return html || linkifyNamesAndUrls(t);
+    }
+
     // DOM helpers
     function el(tag, cls){ const e=document.createElement(tag); if(cls)e.className=cls; return e; }
-    function appendMsgHtml(target, html, sender){ const m=el('div','msg '+sender); m.innerHTML=html; target.appendChild(m); target.scrollTop=target.scrollHeight; }
-    function appendMsgText(target, text, sender){ const m=el('div','msg '+sender); m.textContent=text; target.appendChild(m); target.scrollTop=target.scrollHeight; }
+    function appendMsgHtml(target, html, sender){
+      const m=el('div','msg '+sender); m.innerHTML=html; target.appendChild(m); target.scrollTop=target.scrollHeight;
+    }
+    function appendMsgText(target, text, sender){
+      const m=el('div','msg '+sender); m.textContent=text; target.appendChild(m); target.scrollTop=target.scrollHeight;
+    }
+
+    // Typing indicator
+    function showTyping(target){
+      const wrap = el('div','msg bot');
+      const t = el('div','typing');
+      t.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+      wrap.appendChild(t);
+      target.appendChild(wrap);
+      target.scrollTop = target.scrollHeight;
+      return wrap; // return node to remove later
+    }
+    function removeTyping(node){ if(node && node.parentNode){ node.parentNode.remove(); } }
 
     function addBotAll(rawText){
-      const html = nameLinkify(rawText);
+      const clean = stripHtml(rawText || '');
+      const html = mdLightToHtml(clean);
       appendMsgHtml(inline.messages, html, 'bot');
       appendMsgHtml(popup.messages, html, 'bot');
       if(popup.wrap.style.display!=='block'){ bubbleBadge.style.display='block'; bubbleBadge.textContent='1'; }
@@ -344,6 +416,10 @@
       addUserAll(text);
       input.value = '';
 
+      // show typing indicators in both views
+      const typingInline = showTyping(inline.messages);
+      const typingPopup  = showTyping(popup.messages);
+
       try{
         const res = await fetch(webhookUrl, {
           method:'POST',
@@ -362,8 +438,10 @@
         }
         if (!answer) { try { answer = await res.text(); } catch {} }
 
+        removeTyping(typingInline); removeTyping(typingPopup);
         addBotAll(answer || 'No response received.');
       }catch(e){
+        removeTyping(typingInline); removeTyping(typingPopup);
         addBotAll('Error sending message.');
       }
     }
