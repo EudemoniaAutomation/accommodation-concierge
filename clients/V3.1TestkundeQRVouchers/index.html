@@ -17,7 +17,8 @@
       --bg:#000000; --ink:#ffffff; --muted:#94a3b8;
       --acc:#ff1044; --acc-glow:#ff3366;
       --card:rgba(15,15,15,.8); --card-border:rgba(255,16,68,.15);
-      --qr_size:120px; --bubble_size:56px;
+      --qr_size:160px; /* größer */
+      --bubble_size:56px;
     }
 
     /* Animated Background */
@@ -106,19 +107,14 @@
     .qr-section{ display:flex; align-items:center; justify-content:center; margin-top:20px; position:relative; }
     .qr-wrapper{ position:relative; width:var(--qr_size); height:var(--qr_size); }
     .qr-container{
-      position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.85));
-      border-radius:16px; padding:12px;
-      display:grid; place-items:center; cursor:pointer; text-decoration:none;
+      position:absolute; inset:0;
+      background:linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.90));
+      border-radius:16px; padding:12px; text-decoration:none;
+      display:grid; place-items:center; cursor:pointer;
       box-shadow:0 20px 60px rgba(255,16,68,.30), inset 0 0 20px rgba(255,16,68,.12);
-      /* Glow + Pulsieren */
-      animation: qrGlow 3s infinite, qrBeat 2.6s ease-in-out infinite;
+      /* kein Pulsieren mehr */
     }
-    @keyframes qrGlow{
-      0%,100%{ box-shadow:0 20px 60px rgba(255,16,68,.30), inset 0 0 20px rgba(255,16,68,.12) }
-      50%{ box-shadow:0 24px 80px rgba(255,16,68,.50), inset 0 0 30px rgba(255,16,68,.20) }
-    }
-    @keyframes qrBeat{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.05) } }
-
+    .qr-container:hover{ transform:scale(1.03); }
     .qr-container img{ width:100%; height:100%; object-fit:contain; image-rendering:pixelated; image-rendering:crisp-edges; }
 
     .chat-bubble{
@@ -277,8 +273,18 @@
     window.addEventListener('hashchange', tryOpenFromUrl);
     tryOpenFromUrl();
 
-    // ===== Helpers: Link handling (Name + URL → "Name Link") =====
+    // ===== Helpers: sanitize + link handling =====
     const urlRegex = /\b(https?:\/\/[^\s<>]+[^\s<\.)])/gi;
+
+    // 1) HTML aus GPT entfernen, damit keine Anker-Attribute als Text auftauchen
+    function stripHtml(raw){
+      if(!raw) return '';
+      // zuerst komplette Links entfernen und nur den sichtbaren Text behalten
+      let s = raw.replace(/<a\b[^>]*>(.*?)<\/a>/gi, (_m, inner) => inner);
+      // restliche Tags entfernen
+      s = s.replace(/<[^>]+>/g, '');
+      return s;
+    }
 
     function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
     function normalizeUrl(u){
@@ -292,7 +298,8 @@
 
     // Name + URL → "Name Link" (nur "Link" ist anklickbar)
     // Erfasst: "Name (https://…)", "Name - https://…", "Name: https://…", "Name – https://…"
-    function nameLinkify(text){
+    function nameLinkify(rawText){
+      const text = stripHtml(rawText); // <-- wichtig
       let safe = escapeHtml(text || '');
       const replacedSet = new Set(); // normalisierte URLs, die schon verarbeitet wurden
 
