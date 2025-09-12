@@ -3,10 +3,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Voucher Check</title>
 <style>
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif;padding:24px;max-width:600px;margin:auto}
-  .card{border:1px solid #e6e6e6;border-radius:12px;padding:20px}
-  .ok{color:#0a0}.bad{color:#c00}.muted{color:#666}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif;padding:24px;max-width:680px;margin:auto}
+  .card{border:1px solid #e6e6e6;border-radius:12px;padding:24px}
+  h1{margin:0 0 8px}.muted{color:#666}
+  .valid{color:#22863a}.expired{color:#d73a49}.used{color:#c24e00}.bad{color:#999}
 </style>
+
 <div id="app" class="card">Checking…</div>
 <script>
 (async () => {
@@ -18,13 +20,13 @@
   const res = await fetch('https://iqpyenvbffttechtjohx.functions.supabase.co/r', {
     method: 'POST',
     headers: {
-      'Authorization': 'Bearer YOUR_ANON_KEY',
+      'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwcXllbnZiZmZ0dGVoY2p0b2h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0ODA5MzQsImV4cCI6MjA3MzA1NjkzNH0.VPXsWgy5aoY9qoGdxkEBUGTO7o6Fr4GdRj_mWUrwqpc',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ t })
   });
 
-  const html = await res.text();      // deine Function liefert HTML
+  const html = await res.text();  // Edge Function liefert HTML
   app.innerHTML = html;
 })();
 </script>
