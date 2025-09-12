@@ -72,13 +72,12 @@
   const urlRegex = /\b(https?:\/\/[^\s<>]+[^\s<\.)])/gi;
 
   function escapeHtml(s){
-    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    return (s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
   function normalizeUrl(u){
     try{
       const x = new URL(u);
       x.hash = ''; // ignore hash for matching
-      // (Optional) strip common tracking params:
       ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid'].forEach(p=>x.searchParams.delete(p));
       let href = x.toString();
       if (href.endsWith('/')) href = href.slice(0,-1);
@@ -95,19 +94,48 @@
     }catch{ return u.length>28 ? u.slice(0,28)+'…' : u; }
   }
 
-  function linkifyWithOptionalRedeem(text, voucherSet){
-    const safe = escapeHtml(text || '');
-    return safe.replace(urlRegex, (match) => {
+  // NEW: Name+URL → Name wird anklickbar, URL wird nicht separat gezeigt
+  // Erfasst Varianten: "Trattoria Nera (https://…)", "Trattoria Nera - https://…", "Trattoria Nera: https://…"
+  function nameLinkify(text, voucherSet){
+    let safe = escapeHtml(text || '');
+    const replacedSet = new Set(); // normalisierte URLs, die bereits in Name-Ankern stecken
+
+    const patterns = [
+      // Name (URL)
+      /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:\(|（)\s*(https?:\/\/[^\s<>]+[^\s<\.)])\s*(?:\)|）)/g,
+      // Name - URL  /  Name: URL  /  Name – URL / Name — URL
+      /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:[–—-]|:)\s*(https?:\/\/[^\s<>]+[^\s<\.)])/g
+    ];
+
+    function makeNameAnchor(name, hrefRaw){
+      const hrefNorm = normalizeUrl(hrefRaw);
+      replacedSet.add(hrefNorm);
+      const anchor = `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">${escapeHtml(name.trim())}</a>`;
+      const redeem = (voucherSet && voucherSet.has(hrefNorm))
+        ? ` <a href="#" class="redeem" data-redeem="${encodeURIComponent(hrefRaw)}">Redeem Voucher</a>`
+        : '';
+      return `${anchor}${redeem}`;
+    }
+
+    // 1) Ersetze Name+URL Muster zuerst
+    patterns.forEach(re => {
+      safe = safe.replace(re, (_m, name, url) => makeNameAnchor(name, url));
+    });
+
+    // 2) Verbleibende rohe URLs (falls noch vorhanden) → pretty Anchor (Fallback)
+    safe = safe.replace(urlRegex, (match) => {
       const hrefRaw = match.replace(/&amp;/g,'&');
       const hrefNorm = normalizeUrl(hrefRaw);
+      if (replacedSet.has(hrefNorm)) return ''; // schon als Name-Link verarbeitet
       const label = shortenDisplay(hrefRaw);
       const anchor = `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">${label}</a>`;
-      const shouldRedeem = voucherSet && voucherSet.has(hrefNorm);
-      const redeem = shouldRedeem
+      const redeem = (voucherSet && voucherSet.has(hrefNorm))
         ? ` <a href="#" class="redeem" data-redeem="${encodeURIComponent(hrefRaw)}">Redeem Voucher</a>`
         : '';
       return `${anchor}${redeem}`;
     });
+
+    return safe;
   }
 
   function el(tag, cls){ const e=document.createElement(tag); if(cls)e.className=cls; return e; }
@@ -124,7 +152,7 @@
     target.scrollTop = target.scrollHeight;
   }
   function addBotAll(text, voucherSet){
-    const html = linkifyWithOptionalRedeem(text, voucherSet);
+    const html = nameLinkify(text, voucherSet); // <-- HIER: neue Logik
     appendMsgHtml(inline.messages, html, 'bot');
     appendMsgHtml(popup.messages, html, 'bot');
     if (popup.wrap.style.display!=='block'){ bubbleBadge.style.display='block'; bubbleBadge.textContent='1'; }
