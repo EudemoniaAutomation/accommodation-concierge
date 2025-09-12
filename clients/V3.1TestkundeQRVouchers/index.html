@@ -1,418 +1,386 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accommodation Concierge - Chat</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Accommodation Concierge - Chat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: #000; color: #fff; min-height: 100vh; overflow-x: hidden;
-            display: flex; align-items: center; justify-content: center; padding: 20px;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #000; color: #fff; min-height: 100vh; overflow-x: hidden;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
 
-        :root {
-            --bg: #000000; --ink: #ffffff; --muted: #94a3b8; --acc: #ff1044; --acc-glow: #ff3366;
-            --card: rgba(15, 15, 15, 0.8); --card-border: rgba(255, 16, 68, 0.15);
-            --qr_size: 120px; --bubble_size: 56px;
-        }
+    :root{
+      --bg:#000000; --ink:#ffffff; --muted:#94a3b8;
+      --acc:#ff1044; --acc-glow:#ff3366;
+      --card:rgba(15,15,15,.8); --card-border:rgba(255,16,68,.15);
+      --qr_size:120px; --bubble_size:56px;
+    }
 
-        /* Animated Background */
-        body::before {
-            content: "";
-            position: fixed; inset: 0;
-            background:
-                radial-gradient(circle at 20% 50%, rgba(255, 16, 68, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 16, 68, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(234, 51, 147, 0.08) 0%, transparent 40%),
-                linear-gradient(180deg, #000 0%, #0a0a0a 100%);
-            z-index: 0; animation: backgroundShift 20s ease infinite;
-        }
-        @keyframes backgroundShift { 0%, 100% { transform: scale(1) rotate(0deg) } 50% { transform: scale(1.1) rotate(1deg) } }
+    /* Animated Background */
+    body::before{
+      content:""; position:fixed; inset:0;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(255, 16, 68, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 16, 68, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(234, 51, 147, 0.08) 0%, transparent 40%),
+        linear-gradient(180deg, #000 0%, #0a0a0a 100%);
+      z-index:0; animation:backgroundShift 20s ease infinite;
+    }
+    @keyframes backgroundShift{ 0%,100%{transform:scale(1) rotate(0)} 50%{transform:scale(1.1) rotate(1deg)} }
 
-        /* Floating Particles */
-        .particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-        .particle { position: absolute; width: 2px; height: 2px; background: var(--acc); border-radius: 50%; opacity: 0; animation: float 15s infinite; box-shadow: 0 0 10px var(--acc-glow); }
-        @keyframes float { 0% { transform: translateY(100vh) translateX(0); opacity: 0 } 10% { opacity: 1 } 90% { opacity: 1 } 100% { transform: translateY(-100vh) translateX(100px); opacity: 0 } }
+    /* Floating Particles */
+    .particles{ position:fixed; inset:0; z-index:1; pointer-events:none; }
+    .particle{ position:absolute; width:2px; height:2px; background:var(--acc); border-radius:50%;
+      opacity:0; animation:float 15s infinite; box-shadow:0 0 10px var(--acc-glow); }
+    @keyframes float{
+      0%{ transform:translateY(100vh) translateX(0); opacity:0 }
+      10%{ opacity:1 } 90%{ opacity:1 }
+      100%{ transform:translateY(-100vh) translateX(100px); opacity:0 }
+    }
 
-        /* Main Container */
-        .chat-container { position: relative; z-index: 2; width: 100%; max-width: 400px; animation: fadeInUp 1s ease; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px) } to { opacity: 1; transform: none } }
+    /* Main Container */
+    .chat-container{ position:relative; z-index:2; width:100%; max-width:400px; animation:fadeInUp 1s ease; }
+    @keyframes fadeInUp{ from{opacity:0; transform:translateY(30px)} to{opacity:1; transform:none} }
 
-        /* Header */
-        .header { text-align: center; margin-bottom: 30px; }
-        .hero-badge {
-            display: inline-block; padding: 8px 16px;
-            background: linear-gradient(135deg, rgba(255,16,68,.2), rgba(255,16,68,.05));
-            border: 1px solid var(--card-border); border-radius: 50px; font-size: 11px; letter-spacing: 1px; color: var(--acc);
-            margin-bottom: 15px; animation: pulse 2s infinite; text-transform: uppercase;
-        }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1 } 50% { transform: scale(1.05); opacity: .9 } }
+    /* Header */
+    .header{ text-align:center; margin-bottom:30px; }
+    .hero-badge{
+      display:inline-block; padding:8px 16px;
+      background:linear-gradient(135deg, rgba(255,16,68,.2), rgba(255,16,68,.05));
+      border:1px solid var(--card-border); border-radius:50px; font-size:11px; letter-spacing:1px;
+      color:var(--acc); margin-bottom:15px; animation:pulse 2s infinite; text-transform:uppercase;
+    }
+    @keyframes pulse{ 0%,100%{transform:scale(1); opacity:1} 50%{transform:scale(1.05); opacity:.9} }
 
-        .hero-title {
-            font-size: 2.2rem; font-weight: 900; line-height: 1.1; margin-bottom: 15px;
-            background: linear-gradient(135deg, #fff 0%, var(--acc) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            text-shadow: 0 0 80px rgba(255,16,68,.5);
-        }
-        .hero-subtitle { font-size: 1rem; color: var(--muted); line-height: 1.5; margin-bottom: 20px; }
+    .hero-title{
+      font-size:2.2rem; font-weight:900; line-height:1.1; margin-bottom:15px;
+      background:linear-gradient(135deg,#fff 0%, var(--acc) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      text-shadow:0 0 80px rgba(255,16,68,.5);
+    }
+    .hero-subtitle{ font-size:1rem; color:var(--muted); line-height:1.5; margin-bottom:20px; }
 
-        /* Chat Window */
-        .chat-window {
-            width: 100%; height: 60vh; min-height: 400px; max-height: 600px;
-            background: rgba(10,10,10,.9); border: 1px solid var(--card-border); border-radius: 20px; overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,16,68,.1);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            display: flex; flex-direction: column; position: relative;
-        }
-        .chat-window::before { content: ""; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
-            background: linear-gradient(135deg, var(--acc), transparent, var(--acc));
-            border-radius: 20px; opacity: .3; animation: borderGlow 3s infinite; z-index: -1; }
-        @keyframes borderGlow { 0%, 100% { opacity: .3 } 50% { opacity: .6 } }
+    /* Chat Window */
+    .chat-window{
+      width:100%; height:60vh; min-height:400px; max-height:600px;
+      background:rgba(10,10,10,.9); border:1px solid var(--card-border); border-radius:20px; overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,16,68,.1);
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      display:flex; flex-direction:column; position:relative;
+    }
+    .chat-window::before{
+      content:""; position:absolute; inset:-2px; border-radius:20px;
+      background:linear-gradient(135deg, var(--acc), transparent, var(--acc));
+      opacity:.3; animation:borderGlow 3s infinite; z-index:-1;
+    }
+    @keyframes borderGlow{ 0%,100%{opacity:.3} 50%{opacity:.6} }
 
-        .chat-header {
-            background: linear-gradient(90deg, var(--acc), #cc0d36); color: #000; padding: 15px 20px; font-weight: 800;
-            display: flex; align-items: center; justify-content: space-between; font-size: 1.1rem;
-        }
-        .chat-close { background: transparent; border: none; color: #000; font-size: 24px; font-weight: 900; cursor: pointer; transition: .3s; display: none; }
-        .chat-close:hover { transform: rotate(90deg); }
+    .chat-header{
+      background:linear-gradient(90deg, var(--acc), #cc0d36); color:#000; padding:15px 20px; font-weight:800;
+      display:flex; align-items:center; justify-content:space-between; font-size:1.1rem;
+    }
+    .chat-close{ background:transparent; border:none; color:#000; font-size:24px; font-weight:900; cursor:pointer; transition:.3s; display:none; }
+    .chat-close:hover{ transform:rotate(90deg); }
 
-        .chat-messages { flex: 1; overflow-y: auto; padding: 20px; background: rgba(5,5,5,.6); display: flex; flex-direction: column; gap: 12px; }
-        .msg { padding: 12px 16px; border-radius: 18px; max-width: 85%; font-size: 14px; line-height: 1.5; animation: msgPop .3s ease; }
-        @keyframes msgPop { from { transform: scale(.8); opacity: 0 } to { transform: scale(1); opacity: 1 } }
-        .user { background: linear-gradient(135deg, rgba(255,16,68,.2), rgba(255,16,68,.1)); align-self: flex-end; color: #fff; border: 1px solid rgba(255,16,68,.3); }
-        .bot { background: rgba(255,255,255,.05); align-self: flex-start; color: #e2e8f0; border: 1px solid rgba(255,255,255,.1); }
+    .chat-messages{ flex:1; overflow-y:auto; padding:20px; background:rgba(5,5,5,.6); display:flex; flex-direction:column; gap:12px; }
+    .msg{ padding:12px 16px; border-radius:18px; max-width:85%; font-size:14px; line-height:1.5; animation:msgPop .3s ease; }
+    @keyframes msgPop{ from{ transform:scale(.8); opacity:0 } to{ transform:scale(1); opacity:1 } }
+    .user{ background:linear-gradient(135deg, rgba(255,16,68,.2), rgba(255,16,68,.1)); align-self:flex-end; color:#fff; border:1px solid rgba(255,16,68,.3); }
+    .bot{ background:rgba(255,255,255,.05); align-self:flex-start; color:#e2e8f0; border:1px solid rgba(255,255,255,.1); }
 
-        .chat-input-area { display: flex; border-top: 1px solid var(--card-border); background: rgba(10,10,10,.9); padding: 0; }
-        .chat-input { flex: 1; border: none; padding: 18px 20px; font-size: 16px; background: transparent; color: #fff; outline: none; }
-        .chat-input::placeholder { color: rgba(148,163,184,.7); }
-        .chat-send {
-            background: linear-gradient(135deg, var(--acc), #cc0d36); color: #000; border: none; padding: 0 30px; cursor: pointer;
-            font-weight: 800; transition: .3s; font-size: 14px; text-transform: uppercase; letter-spacing: .5px;
-        }
-        .chat-send:hover { background: linear-gradient(135deg, #ff3366, #ff1044); transform: translateY(-1px); }
-        .chat-send:active { transform: translateY(0); }
+    .chat-input-area{ display:flex; border-top:1px solid var(--card-border); background:rgba(10,10,10,.9); padding:0; }
+    .chat-input{ flex:1; border:none; padding:18px 20px; font-size:16px; background:transparent; color:#fff; outline:none; }
+    .chat-input::placeholder{ color:rgba(148,163,184,.7); }
+    .chat-send{
+      background:linear-gradient(135deg, var(--acc), #cc0d36); color:#000; border:none; padding:0 30px; cursor:pointer;
+      font-weight:800; transition:.3s; font-size:14px; text-transform:uppercase; letter-spacing:.5px;
+    }
+    .chat-send:hover{ background:linear-gradient(135deg, #ff3366, #ff1044); transform:translateY(-1px); }
+    .chat-send:active{ transform:translateY(0); }
 
-        /* QR Section */
-        .qr-section { display: flex; align-items: center; justify-content: center; margin-top: 20px; position: relative; }
-        .qr-wrapper { position: relative; width: var(--qr_size); height: var(--qr_size); }
-        .qr-container {
-            position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.85));
-            border-radius: 16px; padding: 12px; box-shadow: 0 20px 60px rgba(255,16,68,.3), inset 0 0 20px rgba(255,16,68,.1);
-            display: grid; place-items: center; cursor: pointer; transition: .3s; animation: qrGlow 3s infinite; text-decoration: none;
-        }
-        @keyframes qrGlow { 0%, 100% { box-shadow: 0 20px 60px rgba(255,16,68,.3), inset 0 0 20px rgba(255,16,68,.1) } 50% { box-shadow: 0 20px 80px rgba(255,16,68,.5), inset 0 0 30px rgba(255,16,68,.2) } }
-        .qr-container:hover { transform: scale(1.05); }
-        .qr-container img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; }
+    /* QR Section */
+    .qr-section{ display:flex; align-items:center; justify-content:center; margin-top:20px; position:relative; }
+    .qr-wrapper{ position:relative; width:var(--qr_size); height:var(--qr_size); }
+    .qr-container{
+      position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.85));
+      border-radius:16px; padding:12px;
+      display:grid; place-items:center; cursor:pointer; text-decoration:none;
+      box-shadow:0 20px 60px rgba(255,16,68,.30), inset 0 0 20px rgba(255,16,68,.12);
+      /* Glow + Pulsieren */
+      animation: qrGlow 3s infinite, qrBeat 2.6s ease-in-out infinite;
+    }
+    @keyframes qrGlow{
+      0%,100%{ box-shadow:0 20px 60px rgba(255,16,68,.30), inset 0 0 20px rgba(255,16,68,.12) }
+      50%{ box-shadow:0 24px 80px rgba(255,16,68,.50), inset 0 0 30px rgba(255,16,68,.20) }
+    }
+    @keyframes qrBeat{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.05) } }
 
-        .chat-bubble {
-            position: absolute; bottom: -8px; right: -8px; width: 40px; height: 40px;
-            background: linear-gradient(135deg, var(--acc), #cc0d36); border-radius: 50%;
-            display: grid; place-items: center; cursor: pointer; font-size: 18px;
-            box-shadow: 0 10px 40px rgba(255,16,68,.5), inset 0 -3px 10px rgba(0,0,0,.2); transition: .3s; animation: bubblePulse 2s infinite; z-index: 10;
-        }
-        @keyframes bubblePulse { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.1) } }
-        .chat-badge { position: absolute; top: -5px; right: -5px; background: #00ff88; color: #000; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
+    .qr-container img{ width:100%; height:100%; object-fit:contain; image-rendering:pixelated; image-rendering:crisp-edges; }
 
-        /* Popup */
-        .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.8); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 999; display: none; }
-        .popup-wrap { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; display: none; animation: popupIn .3s ease; width: 90vw; max-width: 400px; }
-        @keyframes popupIn { from { transform: translate(-50%, -50%) scale(.8); opacity: 0 } to { transform: translate(-50%, -50%) scale(1); opacity: 1 } }
+    .chat-bubble{
+      position:absolute; bottom:-8px; right:-8px; width:40px; height:40px;
+      background:linear-gradient(135deg, var(--acc), #cc0d36); border-radius:50%;
+      display:grid; place-items:center; cursor:pointer; font-size:18px;
+      box-shadow:0 10px 40px rgba(255,16,68,.5), inset 0 -3px 10px rgba(0,0,0,.2);
+      transition:.3s; animation:bubblePulse 2s infinite; z-index:10;
+    }
+    @keyframes bubblePulse{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.1) } }
+    .chat-badge{ position:absolute; top:-5px; right:-5px; background:#00ff88; color:#000; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:10px; display:none; }
 
-        /* Scrollbar */
-        .chat-messages::-webkit-scrollbar { width: 4px; }
-        .chat-messages::-webkit-scrollbar-track { background: rgba(255,255,255,.05); }
-        .chat-messages::-webkit-scrollbar-thumb { background: var(--acc); border-radius: 2px; }
+    /* Popup */
+    .popup-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.8); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); z-index:999; display:none; }
+    .popup-wrap{ position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; display:none; animation:popupIn .3s ease; width:90vw; max-width:400px; }
+    @keyframes popupIn{ from{ transform:translate(-50%,-50%) scale(.8); opacity:0 } to{ transform:translate(-50%,-50%) scale(1); opacity:1 } }
 
-        /* Mobile */
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            .hero-title { font-size: 1.8rem; }
-            .hero-subtitle { font-size: 0.9rem; }
-            .chat-window { height: 70vh; min-height: 350px; border-radius: 16px; }
-            .chat-input { font-size: 16px; padding: 16px 18px; }
-            .chat-send { padding: 0 24px; }
-            .header { margin-bottom: 20px; }
-            .qr-section { margin-top: 15px; }
-        }
-        @media (max-height: 600px) { .chat-window { height: 50vh; min-height: 300px; } }
-    </style>
+    /* Scrollbar */
+    .chat-messages::-webkit-scrollbar{ width:4px; }
+    .chat-messages::-webkit-scrollbar-track{ background:rgba(255,255,255,.05); }
+    .chat-messages::-webkit-scrollbar-thumb{ background:var(--acc); border-radius:2px; }
+
+    /* Mobile */
+    @media (max-width:480px){
+      body{ padding:10px; }
+      .hero-title{ font-size:1.8rem; }
+      .hero-subtitle{ font-size:0.9rem; }
+      .chat-window{ height:70vh; min-height:350px; border-radius:16px; }
+      .chat-input{ font-size:16px; padding:16px 18px; }
+      .chat-send{ padding:0 24px; }
+      .header{ margin-bottom:20px; }
+      .qr-section{ margin-top:15px; }
+    }
+    @media (max-height:600px){ .chat-window{ height:50vh; min-height:300px; } }
+  </style>
 </head>
 <body>
-    <!-- Animated Particles -->
-    <div class="particles">
-        <div class="particle" style="left:10%;animation-delay:0s"></div>
-        <div class="particle" style="left:20%;animation-delay:2s"></div>
-        <div class="particle" style="left:30%;animation-delay:4s"></div>
-        <div class="particle" style="left:40%;animation-delay:6s"></div>
-        <div class="particle" style="left:50%;animation-delay:8s"></div>
-        <div class="particle" style="left:60%;animation-delay:10s"></div>
-        <div class="particle" style="left:70%;animation-delay:12s"></div>
-        <div class="particle" style="left:80%;animation-delay:14s"></div>
-        <div class="particle" style="left:90%;animation-delay:1s"></div>
+  <!-- Animated Particles -->
+  <div class="particles">
+    <div class="particle" style="left:10%;animation-delay:0s"></div>
+    <div class="particle" style="left:20%;animation-delay:2s"></div>
+    <div class="particle" style="left:30%;animation-delay:4s"></div>
+    <div class="particle" style="left:40%;animation-delay:6s"></div>
+    <div class="particle" style="left:50%;animation-delay:8s"></div>
+    <div class="particle" style="left:60%;animation-delay:10s"></div>
+    <div class="particle" style="left:70%;animation-delay:12s"></div>
+    <div class="particle" style="left:80%;animation-delay:14s"></div>
+    <div class="particle" style="left:90%;animation-delay:1s"></div>
+  </div>
+
+  <div class="chat-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="hero-badge">Premium Guest Experience</div>
+      <h1 class="hero-title">Accommodation Concierge</h1>
+      <p class="hero-subtitle">Your personal AI assistant for check-in, house rules, and local recommendations</p>
     </div>
 
-    <div class="chat-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="hero-badge">Premium Guest Experience</div>
-            <h1 class="hero-title">Accommodation Concierge</h1>
-            <p class="hero-subtitle">Your personal AI assistant for check-in, house rules, and local recommendations</p>
-        </div>
-
-        <!-- Chat Window -->
-        <div class="chat-window" id="inline-chat">
-            <div class="chat-header">
-                <span>💬 Accommodation Concierge</span>
-                <button class="chat-close" id="inline-close" title="Minimize">×</button>
-            </div>
-            <div class="chat-messages" id="inline-messages"></div>
-            <div class="chat-input-area">
-                <input type="text" class="chat-input" id="inline-input" placeholder="Ask me anything about your stay..." />
-                <button class="chat-send" id="inline-send">Send</button>
-            </div>
-        </div>
-
-        <!-- QR Code Section -->
-        <div class="qr-section">
-            <div class="qr-wrapper">
-                <a class="qr-container" id="apt-qr" href="#openChat" title="Scan to open chat">
-                    <img id="apt-qr-img" alt="QR to open chat" />
-                </a>
-                <div class="chat-bubble" id="bubble-btn" aria-label="Open chat">💬
-                    <span class="chat-badge" id="bubble-badge">1</span>
-                </div>
-            </div>
-        </div>
+    <!-- Chat Window -->
+    <div class="chat-window" id="inline-chat">
+      <div class="chat-header">
+        <span>💬 Accommodation Concierge</span>
+        <button class="chat-close" id="inline-close" title="Minimize">×</button>
+      </div>
+      <div class="chat-messages" id="inline-messages"></div>
+      <div class="chat-input-area">
+        <input type="text" class="chat-input" id="inline-input" placeholder="Ask me anything about your stay..." />
+        <button class="chat-send" id="inline-send">Send</button>
+      </div>
     </div>
 
-    <!-- Popup Overlay -->
-    <div class="popup-overlay" id="popup-overlay"></div>
-    <!-- Popup Window -->
-    <div class="popup-wrap" id="popup-wrap">
-        <div class="chat-window" id="popup-chat">
-            <div class="chat-header">
-                <span>💬 Accommodation Concierge</span>
-                <button class="chat-close" id="popup-close" title="Close">×</button>
-            </div>
-            <div class="chat-messages" id="popup-messages"></div>
-            <div class="chat-input-area">
-                <input type="text" class="chat-input" id="popup-input" placeholder="Ask about check-in, amenities..." />
-                <button class="chat-send" id="popup-send">Send</button>
-            </div>
+    <!-- QR Code Section -->
+    <div class="qr-section">
+      <div class="qr-wrapper">
+        <a class="qr-container" id="apt-qr" href="#openChat" title="Scan to open chat">
+          <img id="apt-qr-img" alt="QR to open chat" />
+        </a>
+        <div class="chat-bubble" id="bubble-btn" aria-label="Open chat">💬
+          <span class="chat-badge" id="bubble-badge">1</span>
         </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-    (() => {
-        // --- Production Webhook URL ---
-        const webhookUrl = "https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150";
+  <!-- Popup Overlay -->
+  <div class="popup-overlay" id="popup-overlay"></div>
+  <!-- Popup Window -->
+  <div class="popup-wrap" id="popup-wrap">
+    <div class="chat-window" id="popup-chat">
+      <div class="chat-header">
+        <span>💬 Accommodation Concierge</span>
+        <button class="chat-close" id="popup-close" title="Close">×</button>
+      </div>
+      <div class="chat-messages" id="popup-messages"></div>
+      <div class="chat-input-area">
+        <input type="text" class="chat-input" id="popup-input" placeholder="Ask about check-in, amenities..." />
+        <button class="chat-send" id="popup-send">Send</button>
+      </div>
+    </div>
+  </div>
 
-        // DOM refs
-        const inline = {
-            messages: document.getElementById('inline-messages'),
-            input: document.getElementById('inline-input'),
-            send: document.getElementById('inline-send')
-        };
-        const popup = {
-            wrap: document.getElementById('popup-wrap'),
-            overlay: document.getElementById('popup-overlay'),
-            messages: document.getElementById('popup-messages'),
-            input: document.getElementById('popup-input'),
-            send: document.getElementById('popup-send'),
-            closeBtn: document.getElementById('popup-close')
-        };
-        const bubbleBtn = document.getElementById('bubble-btn');
-        const bubbleBadge = document.getElementById('bubble-badge');
-        const QR_IMG = document.getElementById('apt-qr-img');
-        const QR_LINK = document.getElementById('apt-qr');
+  <script>
+  (() => {
+    // --- Production Webhook URL ---
+    const webhookUrl = "https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150";
 
-        // ----- Popup controls -----
-        function openPopup(){ popup.wrap.style.display='block'; popup.overlay.style.display='block'; bubbleBadge.style.display='none'; setTimeout(()=>popup.input?.focus(),50); }
-        function closePopup(){ popup.wrap.style.display='none'; popup.overlay.style.display='none'; }
-        function togglePopup(){ (popup.wrap.style.display==='block') ? closePopup() : openPopup(); }
-        bubbleBtn.addEventListener('click', togglePopup);
-        popup.closeBtn.addEventListener('click', closePopup);
-        popup.overlay.addEventListener('click', closePopup);
+    // DOM refs
+    const inline = {
+      messages: document.getElementById('inline-messages'),
+      input: document.getElementById('inline-input'),
+      send: document.getElementById('inline-send')
+    };
+    const popup = {
+      wrap: document.getElementById('popup-wrap'),
+      overlay: document.getElementById('popup-overlay'),
+      messages: document.getElementById('popup-messages'),
+      input: document.getElementById('popup-input'),
+      send: document.getElementById('popup-send'),
+      closeBtn: document.getElementById('popup-close')
+    };
+    const bubbleBtn = document.getElementById('bubble-btn');
+    const bubbleBadge = document.getElementById('bubble-badge');
+    const QR_IMG = document.getElementById('apt-qr-img');
+    const QR_LINK = document.getElementById('apt-qr');
 
-        // QR opens overlay only
-        QR_LINK.addEventListener('click', (e)=>{ e.preventDefault(); openPopup(); });
+    // Popup controls
+    function openPopup(){ popup.wrap.style.display='block'; popup.overlay.style.display='block'; bubbleBadge.style.display='none'; setTimeout(()=>popup.input?.focus(),50); }
+    function closePopup(){ popup.wrap.style.display='none'; popup.overlay.style.display='none'; }
+    function togglePopup(){ (popup.wrap.style.display==='block') ? closePopup() : openPopup(); }
+    bubbleBtn.addEventListener('click', togglePopup);
+    popup.closeBtn.addEventListener('click', closePopup);
+    popup.overlay.addEventListener('click', closePopup);
 
-        // Generate QR (?openChat=1#openChat)
-        (function setQr(){
-            const base = location.href.split('#')[0];
-            const url = new URL(base); url.searchParams.set('openChat','1');
-            const target = url.toString() + '#openChat';
-            const src1 = 'https://quickchart.io/qr?text='+encodeURIComponent(target)+'&size=512&margin=8&ecLevel=H&format=png&dark=%23000000&light=%23ffffff00';
-            const src2 = 'https://chart.googleapis.com/chart?cht=qr&chs=512x512&chld=H|1&chl='+encodeURIComponent(target);
-            const img = QR_IMG;
-            img.onerror = function(){ if(img.dataset.fallback!=='1'){ img.dataset.fallback='1'; img.src = src2; } };
-            img.src = src1;
-        })();
+    // QR opens overlay only
+    QR_LINK.addEventListener('click', (e)=>{ e.preventDefault(); openPopup(); });
 
-        // Auto-open via URL
-        function tryOpenFromUrl(){
-            const s = new URLSearchParams(location.search);
-            if(location.hash==='#openChat' || s.get('openChat')==='1') openPopup();
-        }
-        window.addEventListener('hashchange', tryOpenFromUrl);
-        tryOpenFromUrl();
+    // Generate QR (?openChat=1#openChat)
+    (function setQr(){
+      const base = location.href.split('#')[0];
+      const url = new URL(base); url.searchParams.set('openChat','1');
+      const target = url.toString() + '#openChat';
 
-        // ===== Helpers: link handling =====
-        const urlRegex = /\b(https?:\/\/[^\s<>]+[^\s<\.)])/gi;
+      const src1 = 'https://quickchart.io/qr?text=' + encodeURIComponent(target) + '&size=512&margin=8&ecLevel=H&format=png&dark=%23000000&light=%23ffffff00';
+      const src2 = 'https://chart.googleapis.com/chart?cht=qr&chs=512x512&chld=H|1&chl=' + encodeURIComponent(target);
 
-        function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-        function normalizeUrl(u){
-            try{
-                const x = new URL(u);
-                x.hash = '';
-                ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid'].forEach(p=>x.searchParams.delete(p));
-                let href = x.toString(); if(href.endsWith('/')) href = href.slice(0,-1);
-                return href;
-            }catch{ return u; }
-        }
-        function shortenDisplay(u){
-            try{
-                const x = new URL(u);
-                const parts = x.pathname.split('/').filter(Boolean);
-                let tail = parts.slice(-2).join('/');
-                if (tail.length > 24) tail = tail.slice(0,24)+'…';
-                return `${x.hostname}${tail ? '/'+tail : ''}`;
-            }catch{ return u.length>28 ? u.slice(0,28)+'…' : u; }
-        }
-
-        // Name + URL → Name als Link; URL nicht separat anzeigen
-        // Erfasst: "Name (https://…)", "Name - https://…", "Name: https://…", "Name – https://…"
-        function nameLinkify(text, voucherSet){
-            let safe = escapeHtml(text || '');
-            const replacedSet = new Set(); // normalisierte URLs, die bereits im Namen verlinkt wurden
-
-            const patterns = [
-                /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:\(|（)\s*(https?:\/\/[^\s<>]+[^\s<\.)])\s*(?:\)|）)/g,
-                /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:[–—-]|:)\s*(https?:\/\/[^\s<>]+[^\s<\.)])/g
-            ];
-
-            function makeNameAnchor(name, hrefRaw){
-                const hrefNorm = normalizeUrl(hrefRaw);
-                replacedSet.add(hrefNorm);
-                const anchor = `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">${escapeHtml(name.trim())}</a>`;
-                const redeem = (voucherSet && voucherSet.has(hrefNorm))
-                    ? ` <a href="#" class="redeem" data-redeem="${encodeURIComponent(hrefRaw)}">Redeem Voucher</a>`
-                    : '';
-                return `${anchor}${redeem}`;
-            }
-
-            // 1) Name+URL-Muster zuerst ersetzen
-            patterns.forEach(re => {
-                safe = safe.replace(re, (_m, name, url) => makeNameAnchor(name, url));
-            });
-
-            // 2) Verbleibende rohe URLs → pretty Link (Fallback)
-            safe = safe.replace(urlRegex, (match) => {
-                const hrefRaw = match.replace(/&amp;/g,'&');
-                const hrefNorm = normalizeUrl(hrefRaw);
-                if (replacedSet.has(hrefNorm)) return ''; // wurde schon über Name ersetzt
-                const label = shortenDisplay(hrefRaw);
-                const anchor = `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">${label}</a>`;
-                const redeem = (voucherSet && voucherSet.has(hrefNorm))
-                    ? ` <a href="#" class="redeem" data-redeem="${encodeURIComponent(hrefRaw)}">Redeem Voucher</a>`
-                    : '';
-                return `${anchor}${redeem}`;
-            });
-
-            return safe;
-        }
-
-        // DOM helpers
-        function el(tag, cls){ const e=document.createElement(tag); if(cls)e.className=cls; return e; }
-        function appendMsgHtml(target, html, sender){ const m=el('div','msg '+sender); m.innerHTML=html; target.appendChild(m); target.scrollTop=target.scrollHeight; }
-        function appendMsgText(target, text, sender){ const m=el('div','msg '+sender); m.textContent=text; target.appendChild(m); target.scrollTop=target.scrollHeight; }
-
-        function addBotAll(rawText, voucherSet){
-            const html = nameLinkify(rawText, voucherSet);
-            appendMsgHtml(inline.messages, html, 'bot');
-            appendMsgHtml(popup.messages, html, 'bot');
-            if(popup.wrap.style.display!=='block'){ bubbleBadge.style.display='block'; bubbleBadge.textContent='1'; }
-        }
-        function addUserAll(text){
-            appendMsgText(inline.messages, text, 'user');
-            appendMsgText(popup.messages, text, 'user');
-        }
-
-        // Seed welcome
-        addBotAll("Welcome! 👋 I'm here to help with check-in, house rules, and local recommendations. Just ask away!");
-
-        // Redeem handler
-        function onRedeem(linkHref, source){
-            fetch(webhookUrl, {
-                method:'POST',
-                headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
-                body: JSON.stringify({ action:'redeem_voucher', link:linkHref, url:window.location.href, meta:{ source } })
-            }).catch(()=>{});
-        }
-        function delegateRedeem(container, source){
-            container.addEventListener('click', (e)=>{
-                const a = e.target.closest('a.redeem');
-                if(!a) return;
-                e.preventDefault();
-                const href = decodeURIComponent(a.getAttribute('data-redeem') || '');
-                if(!href) return;
-                onRedeem(href, source);
-                a.textContent = 'Redeemed ✓';
-                a.style.pointerEvents = 'none';
-                a.style.opacity = '0.7';
-            });
-        }
-        delegateRedeem(inline.messages,'inline');
-        delegateRedeem(popup.messages,'popup');
-
-        // Send handler
-        async function sendMessage(from){
-            const input = from==='popup' ? popup.input : inline.input;
-            const text = (input.value || '').trim();
-            if(!text) return;
-            addUserAll(text);
-            input.value = '';
-
-            try{
-                const res = await fetch(webhookUrl, {
-                    method:'POST',
-                    headers:{ 'Content-Type':'application/json', 'Accept':'application/json, text/plain; q=0.9, */*; q=0.8' },
-                    body: JSON.stringify({ question:text, url:window.location.href, meta:{ source:from } })
-                });
-
-                const ct = (res.headers.get('content-type')||'').toLowerCase();
-                let answer = '';
-                let voucherSet = null;
-
-                if (ct.includes('application/json')) {
-                    try {
-                        const data = await res.json();
-                        answer = (data?.answer || data?.text || data?.message || data?.content || '') + '';
-                        if (Array.isArray(data?.links)) {
-                            voucherSet = new Set(
-                                data.links
-                                    .filter(l => l && l.url && l.voucher === true)
-                                    .map(l => normalizeUrl(l.url))
-                            );
-                        }
-                    } catch {}
-                }
-                if (!answer) { try { answer = await res.text(); } catch {} }
-
-                addBotAll(answer || 'No response received.', voucherSet);
-            }catch(e){
-                addBotAll('Error sending message.');
-            }
-        }
-
-        document.getElementById('inline-send').addEventListener('click', ()=>sendMessage('inline'));
-        document.getElementById('popup-send').addEventListener('click', ()=>sendMessage('popup'));
-        document.getElementById('inline-input').addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage('inline'); });
-        document.getElementById('popup-input').addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage('popup'); });
+      const img = QR_IMG;
+      img.onerror = function(){ if(img.dataset.fallback!=='1'){ img.dataset.fallback='1'; img.src = src2; } };
+      img.src = src1;
     })();
-    </script>
+
+    // Auto-open via URL
+    function tryOpenFromUrl(){
+      const s = new URLSearchParams(location.search);
+      if (location.hash==='#openChat' || s.get('openChat')==='1') openPopup();
+    }
+    window.addEventListener('hashchange', tryOpenFromUrl);
+    tryOpenFromUrl();
+
+    // ===== Helpers: Link handling (Name + URL → "Name Link") =====
+    const urlRegex = /\b(https?:\/\/[^\s<>]+[^\s<\.)])/gi;
+
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function normalizeUrl(u){
+      try{
+        const x = new URL(u); x.hash='';
+        ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid'].forEach(p=>x.searchParams.delete(p));
+        let href = x.toString(); if(href.endsWith('/')) href = href.slice(0,-1);
+        return href;
+      }catch{ return u; }
+    }
+
+    // Name + URL → "Name Link" (nur "Link" ist anklickbar)
+    // Erfasst: "Name (https://…)", "Name - https://…", "Name: https://…", "Name – https://…"
+    function nameLinkify(text){
+      let safe = escapeHtml(text || '');
+      const replacedSet = new Set(); // normalisierte URLs, die schon verarbeitet wurden
+
+      const patterns = [
+        /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:\(|（)\s*(https?:\/\/[^\s<>]+[^\s<\.)])\s*(?:\)|）)/g,
+        /([A-ZÄÖÜ][\wÀ-ž&'’.\- ]{1,60})\s*(?:[–—-]|:)\s*(https?:\/\/[^\s<>]+[^\s<\.)])/g
+      ];
+
+      function makeNamePlusLink(name, hrefRaw){
+        const hrefNorm = normalizeUrl(hrefRaw);
+        replacedSet.add(hrefNorm);
+        const link = `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">Link</a>`;
+        return `${escapeHtml(name.trim())} ${link}`;
+      }
+
+      // 1) Name+URL-Muster zuerst ersetzen
+      patterns.forEach(re => {
+        safe = safe.replace(re, (_m, name, url) => makeNamePlusLink(name, url));
+      });
+
+      // 2) Verbleibende nackte URLs → nur "Link"
+      safe = safe.replace(urlRegex, (match) => {
+        const hrefRaw = match.replace(/&amp;/g,'&');
+        const hrefNorm = normalizeUrl(hrefRaw);
+        if (replacedSet.has(hrefNorm)) return ''; // bereits über Name ersetzt
+        const link = `<a href="${hrefRaw}" target="_blank" rel="noopener noreferrer">Link</a>`;
+        return link;
+      });
+
+      return safe;
+    }
+
+    // DOM helpers
+    function el(tag, cls){ const e=document.createElement(tag); if(cls)e.className=cls; return e; }
+    function appendMsgHtml(target, html, sender){ const m=el('div','msg '+sender); m.innerHTML=html; target.appendChild(m); target.scrollTop=target.scrollHeight; }
+    function appendMsgText(target, text, sender){ const m=el('div','msg '+sender); m.textContent=text; target.appendChild(m); target.scrollTop=target.scrollHeight; }
+
+    function addBotAll(rawText){
+      const html = nameLinkify(rawText);
+      appendMsgHtml(inline.messages, html, 'bot');
+      appendMsgHtml(popup.messages, html, 'bot');
+      if(popup.wrap.style.display!=='block'){ bubbleBadge.style.display='block'; bubbleBadge.textContent='1'; }
+    }
+    function addUserAll(text){
+      appendMsgText(inline.messages, text, 'user');
+      appendMsgText(popup.messages, text, 'user');
+    }
+
+    // Seed welcome
+    addBotAll("Welcome! 👋 I'm here to help with check-in, house rules, and local recommendations. Just ask away!");
+
+    // Send handler
+    async function sendMessage(from){
+      const input = from==='popup' ? popup.input : inline.input;
+      const text = (input.value || '').trim();
+      if(!text) return;
+      addUserAll(text);
+      input.value = '';
+
+      try{
+        const res = await fetch(webhookUrl, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', 'Accept':'application/json, text/plain; q=0.9, */*; q=0.8' },
+          body: JSON.stringify({ question:text, url:window.location.href, meta:{ source:from } })
+        });
+
+        const ct = (res.headers.get('content-type')||'').toLowerCase();
+        let answer = '';
+
+        if (ct.includes('application/json')) {
+          try {
+            const data = await res.json();
+            answer = (data?.answer || data?.text || data?.message || data?.content || '') + '';
+          } catch {}
+        }
+        if (!answer) { try { answer = await res.text(); } catch {} }
+
+        addBotAll(answer || 'No response received.');
+      }catch(e){
+        addBotAll('Error sending message.');
+      }
+    }
+
+    document.getElementById('inline-send').addEventListener('click', ()=>sendMessage('inline'));
+    document.getElementById('popup-send').addEventListener('click', ()=>sendMessage('popup'));
+    document.getElementById('inline-input').addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage('inline'); });
+    document.getElementById('popup-input').addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage('popup'); });
+  })();
+  </script>
 </body>
 </html>
