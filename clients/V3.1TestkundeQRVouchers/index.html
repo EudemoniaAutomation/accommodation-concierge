@@ -324,11 +324,9 @@
 
     // Markdown-light -> HTML (paragraphs + bullets)
     function mdLightToHtml(text){
-      // normalize line endings
       const t = text.replace(/\r\n/g, '\n');
       const lines = t.split('\n');
 
-      // group into paragraphs / lists
       const chunks = [];
       let currList = null;
 
@@ -343,12 +341,10 @@
           if(!currList) currList = [];
           currList.push(bullet[1].trim());
         } else if (line === ''){
-          pushList(); // close list
-          // blank line => paragraph break
-          chunks.push({type:'br'}); // will render as spacing
+          pushList();
+          chunks.push({type:'br'});
         } else {
           pushList();
-          // accumulate plain text paragraph lines
           if (chunks.length && chunks[chunks.length-1].type==='p'){
             chunks[chunks.length-1].text += ' ' + line.trim();
           } else {
@@ -358,7 +354,6 @@
       }
       pushList();
 
-      // render to HTML
       let html = '';
       for (const c of chunks){
         if (c.type === 'p'){
@@ -389,9 +384,11 @@
       wrap.appendChild(t);
       target.appendChild(wrap);
       target.scrollTop = target.scrollHeight;
-      return wrap; // return node to remove later
+      return wrap; // return indicator node
     }
-    function removeTyping(node){ if(node && node.parentNode){ node.parentNode.remove(); } }
+    function removeTyping(node){
+      if(node && typeof node.remove === 'function'){ node.remove(); }
+    }
 
     function addBotAll(rawText){
       const clean = stripHtml(rawText || '');
