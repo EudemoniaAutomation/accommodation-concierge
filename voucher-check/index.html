@@ -2,22 +2,23 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Voucher Check · Powered by Eudemonia</title>
   <style>
     *{box-sizing:border-box;margin:0}
     :root{
       --bg:#000; --ink:#fff; --muted:#94a3b8;
-      --acc:#4A90E2; --acc-glow:#6BA3F5; --card:rgba(18,18,18,.85);
-      --border:rgba(74,144,226,.18);
+      --acc:#4A90E2; --acc-glow:#6BA3F5;
+      --card:rgba(18,18,18,.88); --border:rgba(74,144,226,.18);
+      --radius:22px; --pad:22px;
     }
     html,body{height:100%}
     body{
       font-family:-apple-system,BlinkMacSystemFont,Segoe UI,system-ui,sans-serif;
       color:var(--ink); background:#000; overflow-x:hidden;
       background:
-        radial-gradient(1000px 600px at 10% -20%, rgba(74,144,226,.12), transparent 70%),
-        radial-gradient(900px 500px at 110% 120%, rgba(74,144,226,.10), transparent 70%),
+        radial-gradient(900px 540px at 10% -20%, rgba(74,144,226,.12), transparent 70%),
+        radial-gradient(820px 480px at 110% 120%, rgba(74,144,226,.10), transparent 70%),
         linear-gradient(#000,#090909);
       display:grid; place-items:center; padding:28px;
     }
@@ -30,19 +31,23 @@
     }
     .card{
       background:linear-gradient(135deg,var(--card),rgba(74,144,226,.03));
-      border:1px solid var(--border); border-radius:22px; padding:26px 22px;
+      border:1px solid var(--border); border-radius:var(--radius); padding:var(--pad);
       backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
       box-shadow:0 20px 60px rgba(0,0,0,.55), 0 0 60px rgba(74,144,226,.15) inset;
     }
-    h1{font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:900;line-height:1.1;
-       background:linear-gradient(135deg,#fff,var(--acc)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
-    p.muted{color:var(--muted);margin-top:6px}
-    .result{
-      margin-top:18px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.06);
-      background:rgba(255,255,255,.02);
+    h1{
+      font-size:clamp(1.6rem,4.8vw,2.4rem);font-weight:900;line-height:1.12;margin-bottom:4px;
+      background:linear-gradient(135deg,#fff,var(--acc));
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
     }
-    .result > .frame{
+    p.muted{color:var(--muted);margin-top:8px;font-size:clamp(.95rem,2.8vw,1rem)}
+    .result{
+      margin-top:16px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.02)
+    }
+    .frame{
       display:block; width:100%; height:380px; border:0; background:transparent;
+      border-radius:12px; overflow:hidden;
     }
     .loading{display:flex;align-items:center;gap:10px;color:#cbd5e1;font-size:14px;padding:14px}
     .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc-glow)}
@@ -50,15 +55,28 @@
     .dot:nth-child(3){animation:blink 1.2s .3s infinite}
     .dot:nth-child(4){animation:blink 1.2s .45s infinite}
     @keyframes blink{50%{opacity:.35}}
+    .error{padding:14px;color:#fca5a5}
     .footer{
       margin-top:14px; display:flex; justify-content:space-between; align-items:center; color:var(--muted);
-      font-size:12px
+      font-size:12px; gap:10px; flex-wrap:wrap
     }
     .pill{
       display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
       border:1px solid var(--border); background:rgba(255,255,255,.03)
     }
-    a{color:var(--acc)}
+    a{color:var(--acc);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    /* Mobile Tweaks */
+    @media (max-width:600px){
+      body{padding:16px}
+      :root{--radius:18px; --pad:18px}
+      .frame{height:420px} /* etwas höher für Smartphones */
+    }
+    /* Sehr kleine Geräte */
+    @media (max-width:380px){
+      .frame{height:460px}
+    }
   </style>
 </head>
 <body>
@@ -69,7 +87,7 @@
 
     <div class="card">
       <h1>Voucher Check</h1>
-      <p class="muted">Please see below if the voucher is still valid:</p>
+      <p class="muted">Bitte unten prüfen, ob der Voucher noch gültig ist:</p>
 
       <!-- Ergebniskarte -->
       <div class="result" id="result">
@@ -81,60 +99,64 @@
       </div>
 
       <div class="footer">
-        <div class="pill"> All rights reserved by Eudemonia </div>
+        <div class="pill">All rights reserved by Eudemonia</div>
         <div>Questions? <a href="mailto:info@eudemonia-coaching.de">info@eudemonia-coaching.de</a></div>
       </div>
     </div>
   </div>
 
   <script>
-    // --- CONFIG (füge hier deinen ANON KEY ein) ---
+    // ---------- Config ----------
     const FUNCTION_URL = 'https://iqpyenvbffttechtjohx.functions.supabase.co/r';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwcXllbnZiZmZ0dGVoY2p0b2h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0ODA5MzQsImV4cCI6MjA3MzA1NjkzNH0.VPXsWgy5aoY9qoGdxkEBUGTO7o6Fr4GdRj_mWUrwqpc'; // <— einsetzen
 
-    // --- Token aus URL ziehen ---
+    // ---------- Token aus URL ----------
     const params = new URLSearchParams(location.search);
-    const token = params.get('t');
+    const token  = (params.get('t') || '').trim();
 
     const $frame   = document.getElementById('frame');
     const $loading = document.getElementById('loading');
     const $result  = document.getElementById('result');
 
-    async function run() {
-      if (!token) {
-        $result.innerHTML = '<div style="padding:16px;color:#fca5a5">⚠️ Kein Token übergeben. Öffne den Link aus dem QR-Code.</div>';
-        return;
-      }
-      try {
-        const res = await fetch(FUNCTION_URL, {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ t: token }),
-          referrerPolicy: 'no-referrer'
-        });
-        const html = await res.text();
+    if (!token) {
+      $result.innerHTML = '<div class="error">⚠️ Kein Token übergeben. Bitte den Link aus dem QR-Code öffnen.</div>';
+    } else {
+      (async () => {
+        const target = FUNCTION_URL + '?t=' + encodeURIComponent(token);
 
-        // im eigenen Stil einbetten – isoliert via srcdoc
-        $frame.srcdoc = html;
-        $frame.hidden = false;
-        $loading.remove();
+        // 1) Bevorzugt: per Fetch holen (CORS erlaubt) und via srcdoc einbetten
+        try {
+          const res = await fetch(target, { method:'GET', mode:'cors', credentials:'omit' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const html = await res.text();
 
-        // automatische Höhenanpassung
-        setTimeout(() => {
-          try {
-            const h = $frame.contentWindow.document.body.scrollHeight;
-            if (h && h > 280) $frame.style.height = Math.min(h, 720) + 'px';
-          } catch (_) {}
-        }, 40);
-      } catch (e) {
-        $result.innerHTML = '<div style="padding:16px;color:#fca5a5">⚠️ Verbindung fehlgeschlagen. Bitte später erneut versuchen.</div>';
-        console.error(e);
-      }
+          $frame.srcdoc = html;       // gleiche-Origin srcdoc → wir können Höhe anpassen
+          $frame.hidden = false;
+          $loading.remove();
+
+          // dynamische Höhe
+          requestAnimationFrame(() => {
+            try {
+              const doc = $frame.contentWindow?.document;
+              if (!doc) return;
+              const update = () => {
+                const h = Math.max(300, Math.min(720, doc.body.scrollHeight + 2));
+                $frame.style.height = h + 'px';
+              };
+              update();
+              new MutationObserver(update).observe(doc.body, { childList:true, subtree:true, attributes:true });
+              window.addEventListener('resize', update);
+            } catch {}
+          });
+          return;
+        } catch (e) {
+          // 2) Fallback: direkt als Iframe-URL laden (ohne Fetch/CORS); keine Höhenmessung möglich
+          console.warn('Fetch failed, falling back to iframe.src', e);
+          $frame.src = target;
+          $frame.hidden = false;
+          $loading.remove();
+        }
+      })();
     }
-    run();
   </script>
 </body>
 </html>
