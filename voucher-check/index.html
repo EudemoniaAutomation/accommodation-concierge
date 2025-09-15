@@ -67,13 +67,11 @@
     a{color:var(--acc);text-decoration:none}
     a:hover{text-decoration:underline}
 
-    /* Mobile Tweaks */
     @media (max-width:600px){
       body{padding:16px}
       :root{--radius:18px; --pad:18px}
-      .frame{height:420px} /* etwas höher für Smartphones */
+      .frame{height:420px}
     }
-    /* Sehr kleine Geräte */
     @media (max-width:380px){
       .frame{height:460px}
     }
@@ -89,7 +87,6 @@
       <h1>Voucher Check</h1>
       <p class="muted">Bitte unten prüfen, ob der Voucher noch gültig ist:</p>
 
-      <!-- Ergebniskarte -->
       <div class="result" id="result">
         <div class="loading" id="loading">
           <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
@@ -107,7 +104,7 @@
 
   <script>
     // ---------- Config ----------
-    const FUNCTION_URL = 'https://iqpyenvbffttechtjohx.functions.supabase.co/r';
+    const FUNCTION_URL = 'https://ipqyenvbffttehcjtohx.functions.supabase.co/r';
 
     // ---------- Token aus URL ----------
     const params = new URLSearchParams(location.search);
@@ -123,17 +120,15 @@
       (async () => {
         const target = FUNCTION_URL + '?t=' + encodeURIComponent(token);
 
-        // 1) Bevorzugt: per Fetch holen (CORS erlaubt) und via srcdoc einbetten
         try {
           const res = await fetch(target, { method:'GET', mode:'cors', credentials:'omit' });
           if (!res.ok) throw new Error('HTTP ' + res.status);
           const html = await res.text();
 
-          $frame.srcdoc = html;       // gleiche-Origin srcdoc → wir können Höhe anpassen
+          $frame.srcdoc = html;
           $frame.hidden = false;
           $loading.remove();
 
-          // dynamische Höhe
           requestAnimationFrame(() => {
             try {
               const doc = $frame.contentWindow?.document;
@@ -149,7 +144,6 @@
           });
           return;
         } catch (e) {
-          // 2) Fallback: direkt als Iframe-URL laden (ohne Fetch/CORS); keine Höhenmessung möglich
           console.warn('Fetch failed, falling back to iframe.src', e);
           $frame.src = target;
           $frame.hidden = false;
