@@ -177,7 +177,7 @@
       function makeAnchor(name,url){return`${escapeHtml(name.trim())} <a href="${url}" target="_blank" rel="noopener noreferrer">Link</a>`}
       patterns.forEach(re=>{html=html.replace(re,(_m,name,url)=>makeAnchor(name,url))});
       html=html.split(/(<a\b[^>]*>.*?<\/a>)/gi).map(seg=>/^<a\b/i.test(seg)?seg:seg.replace(urlRegex,(u)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">Link</a>`)).join('');
-      return html||linkifyNamesAndUrls(t);
+      return html;
     }
     function mdLightToHtml(text){
       const t=text.replace(/\r\n/g,'\n');const lines=t.split('\n');const chunks=[];let currList=null;
@@ -202,8 +202,10 @@
 
     function renderVoucherMessage(v){
       const exp=v&&v.expires_at?new Date(v.expires_at).toLocaleString():'';
-      const html=`<p><strong>🎟️ Your voucher is ready</strong></p>${exp?`<p>Valid until: ${exp}</p>`:''}<p><a href="${v.redeem_url}" target="_blank" rel="noopener">Redeem link</a></p><p><img src="${v.qr_url}" alt="Voucher QR" style="width:180px;height:180px;border-radius:8px;display:block;margin-top:8px"/></p>`;
-      appendMsgHtml(inline.messages,html,'bot');appendMsgHtml(popup.messages,html,'bot');if(popup.wrap.style.display!=='block'){bubbleBadge.style.display='block';bubbleBadge.textContent='1'}
+      const html=`<p><strong>🎟️ Your voucher is ready</strong></p>${exp?`<p>Valid until: ${exp}</p>`:''}<p><img src="${v.qr_url}" alt="Voucher QR" style="width:180px;height:180px;border-radius:8px;display:block;margin-top:8px"/></p>`;
+      appendMsgHtml(inline.messages,html,'bot');
+      appendMsgHtml(popup.messages,html,'bot');
+      if(popup.wrap.style.display!=='block'){bubbleBadge.style.display='block';bubbleBadge.textContent='1'}
     }
 
     addBotAll("Welcome! 👋 I'm here to help with check-in, house rules, and local recommendations. Just ask away!");
