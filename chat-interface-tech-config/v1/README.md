@@ -1,4 +1,4 @@
-# Endora Chat Interface · README
+ Endora Chat Interface · README
 
 ---
 
@@ -31,10 +31,10 @@ Es gibt drei Dateien, die unterschiedliche Aufgaben haben:
   data-page-url="https://YOUR-DOMAIN/clients/CLIENT_SLUG/"
   data-start-open="false">
 </script>
-Alternative (direkter Core-Import):
+```
 
-html
-Copy code
+**Alternative (direkter Core-Import):**
+```html
 <div id="endora-chat-root"></div>
 <script>
   window.ENDORA_CONFIG = {
@@ -45,26 +45,32 @@ Copy code
   };
 </script>
 <script src="https://YOUR-DOMAIN/chat-interface-tech-config/v1/chat-interface-core.js"></script>
-🇬🇧 English
-Overview
-This directory provides the central tech for the Endora chat interface.
+```
+
+---
+
+## 🇬🇧 English
+
+### Overview
+This directory provides the central tech for the Endora chat interface.  
 It contains three files with different purposes:
 
-chat-interface-core.js
-Contains the full chat logic (bubble, popup, webhook integration, QR codes, voucher handling, linkify, markdown).
+- **chat-interface-core.js**  
+  Contains the full chat logic (bubble, popup, webhook integration, QR codes, voucher handling, linkify, markdown).
 
-coreloader.js
-A small loader that is configured via data-* attributes and automatically loads the core.
-Advantage: all pages only need to include one script.
+- **coreloader.js**  
+  A small loader that is configured via `data-*` attributes and automatically loads the core.  
+  Advantage: all pages only need to include one script.
 
-clientcodesnippet.html
-Example snippet for copy/paste by clients. Shows how to include the loader.
+- **clientcodesnippet.html**  
+  Example snippet for copy/paste by clients. Shows how to include the loader.
 
-Usage
-Recommended (via loader):
+---
 
-html
-Copy code
+### Usage
+
+**Recommended (via loader):**
+```html
 <script
   src="https://YOUR-DOMAIN/chat-interface-tech-config/v1/coreloader.js"
   data-webhook="https://automation.eudemonia-coaching.de/webhook/xxxx"
@@ -72,10 +78,10 @@ Copy code
   data-page-url="https://YOUR-DOMAIN/clients/CLIENT_SLUG/"
   data-start-open="false">
 </script>
-Alternative (direct core import):
+```
 
-html
-Copy code
+**Alternative (direct core import):**
+```html
 <div id="endora-chat-root"></div>
 <script>
   window.ENDORA_CONFIG = {
@@ -86,18 +92,4 @@ Copy code
   };
 </script>
 <script src="https://YOUR-DOMAIN/chat-interface-tech-config/v1/chat-interface-core.js"></script>
-markdown
-Copy code
-
-👉 Diese README ist jetzt wirklich **kurz, nur Text, übersichtlich in Markdown**.  
-
-Willst du, dass ich noch eine Mini-Tabelle für die `data-*` Attribute einfüge (deutsch + englisch), damit es sofort verständlich ist?
-
-
-
-
-
-
-
-
-Ask ChatGPT
+```
