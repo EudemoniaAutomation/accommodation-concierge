@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Endora - Chat</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+      background:#000;color:#fff;min-height:100vh;overflow-x:hidden;
+      display:flex;align-items:center;justify-content:center;padding:20px
+    }
+    :root{
+      --bg:#000000;
+      --ink:#ffffff;
+      --muted:#94a3b8;
+      --acc:#FFD700;
+      --acc-glow:#ffea00;
+      --card:rgba(15,15,15,.8);
+      --card-border:rgba(255,215,0,.15);
+      --qr_size:160px;
+    }
+    body::before{
+      content:"";position:fixed;inset:0;
+      background:radial-gradient(circle at 20% 50%,rgba(255,215,0,.15) 0%,transparent 50%),
+                 radial-gradient(circle at 80% 80%,rgba(255,215,0,.10) 0%,transparent 50%),
+                 radial-gradient(circle at 40% 20%,rgba(255,234,0,.08) 0%,transparent 40%),
+                 linear-gradient(180deg,#000 0%,#0a0a0a 100%);
+      z-index:0;animation:backgroundShift 20s ease infinite
+    }
+    @keyframes backgroundShift{
+      0%,100%{transform:scale(1) rotate(0)}
+      50%{transform:scale(1.1) rotate(1deg)}
+    }
+    .chat-container{position:relative;z-index:2;width:100%;max-width:400px;animation:fadeInUp 1s ease}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+    .header{text-align:center;margin-bottom:30px}
+    .hero-badge{
+      display:inline-block;padding:8px 16px;
+      background:linear-gradient(135deg,rgba(255,215,0,.2),rgba(255,215,0,.05));
+      border:1px solid var(--card-border);border-radius:50px;
+      font-size:11px;letter-spacing:1px;color:var(--acc);
+      margin-bottom:15px;animation:pulse 2s infinite;text-transform:uppercase
+    }
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.9}}
+    .hero-title{
+      font-size:2.2rem;font-weight:900;line-height:1.1;margin-bottom:15px;
+      background:linear-gradient(135deg,#fff 0%,var(--acc) 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;text-shadow:0 0 80px rgba(255,215,0,.5)
+    }
+    .hero-subtitle{font-size:1rem;color:var(--muted);line-height:1.5;margin-bottom:20px}
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="header">
+      <div class="hero-badge">Premium Guest Experience</div>
+      <h1 class="hero-title">Endora</h1>
+      <p class="hero-subtitle">Your personal AI assistant for check-in, house rules, and local recommendations</p>
+    </div>
+
+    <!-- Chat Root (Loader will inject chat UI here) -->
+    <div id="endora-chat-root"></div>
+  </div>
+
+  <!-- Loader Script -->
+  <script
+    src="/chat-interface-tech-config/v1/coreloader.js"
+    data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
+    data-brand="Endora"
+    data-page-url="https://endora.eudemonia-coaching.de/"
+    data-start-open="false">
+  </script>
+</body>
+</html>
