@@ -237,7 +237,12 @@
             "Content-Type": "application/json",
             "Accept": "application/json, text/plain; q=0.9, */*; q=0.8"
           },
-          body: JSON.stringify({ question: text, url: window.location.href, meta: { source: from } })
+          body: JSON.stringify({
+            question: text,
+            // --- Mini-Patch: feste Page-URL aus Config, Fallback auf aktuelle URL ---
+            url: (CFG.pageUrl && CFG.pageUrl.length ? CFG.pageUrl : window.location.href),
+            meta: { source: from }
+          })
         });
         const ct = (res.headers.get("content-type") || "").toLowerCase();
         let data = null, answer = "";
