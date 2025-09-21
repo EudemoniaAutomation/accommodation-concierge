@@ -39,7 +39,13 @@
     .hero-subtitle{font-size:clamp(1.1rem,3vw,1.4rem);color:var(--muted);max-width:740px;margin:0 auto 40px;line-height:1.6}
 
     .cta-container{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin:28px 0}
-    .cta-primary{display:inline-flex;align-items:center;gap:10px;padding:18px 34px;background:linear-gradient(135deg,var(--acc),var(--acc-glow));color:#000;font-weight:800;font-size:1.05rem;text-decoration:none;border-radius:50px;transition:.3s;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(74,144,226,.4);text-transform:uppercase;letter-spacing:.5px}
+    .cta-primary{
+      display:inline-flex;align-items:center;gap:10px;padding:18px 34px;
+      background:linear-gradient(135deg,var(--acc),var(--acc-glow));color:#000;
+      font-weight:800;font-size:1.05rem;text-decoration:none;border-radius:50px;
+      transition:.3s;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(74,144,226,.4)
+      /* removed uppercase + extra tracking */
+    }
     .cta-primary:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 15px 60px rgba(74,144,226,.6)}
     .cta-secondary{display:inline-flex;align-items:center;gap:10px;padding:16px 28px;background:transparent;color:var(--acc);font-weight:800;font-size:1rem;text-decoration:none;border:2px solid var(--acc);border-radius:50px;transition:.3s}
     .cta-secondary:hover{color:#000;transform:translateY(-3px);box-shadow:0 10px 40px rgba(74,144,226,.4);background:var(--acc)}
@@ -149,7 +155,7 @@
       <h1>Endora - more revenue, less work, happier guests</h1>
       <p class="hero-subtitle">One QR code in the apartment is all it takes—your guests enjoy premium service while you earn automatically.</p>
       <div class="cta-container">
-        <a class="cta-primary" href="mailto:info@eudemonia-coaching.de">✨Contact</a>
+        <a class="cta-primary" href="mailto:info@eudemonia-coaching.de">✨ Contact</a>
         <a class="cta-secondary" href="mailto:info@eudemonia-coaching.de">Learn more</a>
       </div>
     </section>
@@ -216,7 +222,7 @@
         <div class="step">
           <div class="step-number">4</div>
           <h4>Earn automatically</h4>
-          <p>Provide outstanding service to your guests and receive comissions with zero extra effort.</p>
+          <p>Provide outstanding service to your guests and receive commissions with zero extra effort.</p>
         </div>
       </div>
     </section>
@@ -272,7 +278,31 @@
     </div>
   </div>
 
-  <!-- TECH: Coreloader (webhook + brand; exact page URL is auto-sent) -->
+  <!-- Small helper: rewrite the seed welcome text once (no auto-open) -->
+  <script>
+    (function() {
+      const desired = "Welcome! 👋 I'm Endora, your Digital Concierge. Ask me anything about your stay.";
+      function tryFix(container) {
+        if (!container) return;
+        const bot = container.querySelector('.msg.bot');
+        if (bot && bot.textContent && bot.textContent.includes("I'm Endora — Digital Concierge")) {
+          bot.textContent = desired;
+        }
+      }
+      const ids = ['inline-messages','popup-messages'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        // attempt now
+        tryFix(el);
+        // watch future additions
+        const mo = new MutationObserver(() => tryFix(el));
+        mo.observe(el, { childList: true, subtree: true });
+      });
+    })();
+  </script>
+
+  <!-- TECH: Coreloader (webhook + brand; exact page URL is auto-sent; will NOT auto-open) -->
   <script
     src="/chat-interface-tech-config/v1/coreloader.js"
     data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
