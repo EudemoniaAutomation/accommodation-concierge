@@ -1,72 +1,258 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Webhook Tester</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Endora – Digital Concierge</title>
+  <style>
+    :root{
+      --bg:#000000;
+      --ink:#ffffff;
+      --muted:#94a3b8;
+
+      /* Accent: BLUE */
+      --acc:#4A90E2;          /* primary blue */
+      --acc-glow:#6BA3F5;     /* lighter glow */
+      --acc-dark:#2E5C8A;     /* darker blue */
+
+      /* Glass / metal look */
+      --card:rgba(15,15,15,.75);
+      --glass:rgba(255,255,255,.06);
+      --steel:#cbd5e1;
+
+      /* Layout helpers */
+      --qr_size:170px;
+      --bubble_size:56px;
+
+      /* Wallpaper behind chat */
+      --wall2:url('https://d1yei2z3i6k35z.cloudfront.net/12820362/68a47346dc795_ModernCozyLivingRoom.jpeg?width=1920');
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background:#000; color:var(--ink); overflow-x:hidden;
+    }
+
+    /* ——— Animated background (particles + slow gradient drift) ——— */
+    body::before{
+      content:""; position:fixed; inset:0; z-index:-2;
+      background:
+        radial-gradient(circle at 18% 45%, rgba(74,144,226,.15) 0%, transparent 50%),
+        radial-gradient(circle at 85% 78%, rgba(107,163,245,.12) 0%, transparent 50%),
+        radial-gradient(circle at 42% 18%, rgba(46,92,138,.10) 0%, transparent 40%),
+        linear-gradient(180deg, #000 0%, #0a0a0a 100%);
+      animation:bgDrift 22s ease-in-out infinite;
+    }
+    @keyframes bgDrift { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+    .particles{position:fixed; inset:0; z-index:-1; pointer-events:none;}
+    .particle{position:absolute; width:2px; height:2px; background:var(--acc); border-radius:50%; opacity:0; box-shadow:0 0 10px var(--acc-glow); animation:float 16s linear infinite;}
+    @keyframes float{
+      0%{transform:translateY(100vh) translateX(0); opacity:0}
+      10%{opacity:.9}
+      90%{opacity:.9}
+      100%{transform:translateY(-110vh) translateX(120px); opacity:0}
+    }
+
+    /* ——— Page container ——— */
+    .container{max-width:1200px; margin:0 auto; padding:40px 18px;}
+
+    /* ——— Hero ——— */
+    .hero{ text-align:center; margin:40px 0 28px; }
+    .badge{
+      display:inline-block; padding:8px 18px; letter-spacing:1.5px; font-weight:800;
+      color:#000; background:linear-gradient(135deg, var(--acc), var(--acc-glow));
+      border-radius:999px; text-transform:uppercase; font-size:12px; box-shadow:0 6px 28px rgba(74,144,226,.45);
+    }
+
+    .title{
+      margin:18px auto 14px;
+      font-size:clamp(2.2rem, 6.5vw, 4.6rem);
+      font-weight:900; line-height:1.06;
+      /* MOVING gradient text */
+      background:linear-gradient(90deg, #fff 0%, var(--acc) 30%, #fff 60%, var(--acc-glow) 100%);
+      background-size:200% auto; -webkit-background-clip:text; background-clip:text; color:transparent;
+      animation:titleFlow 8s linear infinite;
+      text-shadow:0 0 80px rgba(74,144,226,.4);
+    }
+    @keyframes titleFlow { to{ background-position:200% center; } }
+
+    .subtitle{ color:var(--muted); max-width:820px; margin:0 auto; line-height:1.6; font-size:clamp(1.05rem,2.4vw,1.25rem); }
+
+    .cta-row{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
+    .btn{
+      display:inline-flex; align-items:center; gap:.6rem; text-decoration:none; font-weight:800;
+      border-radius:999px; padding:14px 26px; transition:.25s;
+    }
+    .btn.primary{
+      color:#000; background:linear-gradient(135deg, var(--acc), var(--acc-glow));
+      box-shadow:0 12px 38px rgba(74,144,226,.5);
+    }
+    .btn.primary:hover{ transform:translateY(-2px); filter:brightness(1.06); }
+    .btn.ghost{
+      color:var(--acc); border:2px solid var(--acc); background:transparent;
+    }
+    .btn.ghost:hover{ color:#000; background:var(--acc); }
+
+    /* ——— Showcase card with “metal frame” & glass ——— */
+    .showcase{
+      position:relative; margin:46px auto 0; padding:28px; border-radius:28px;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid rgba(148,163,184,.18);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 30px 80px rgba(0,0,0,.55),
+        0 0 0 1px rgba(74,144,226,.16);
+      overflow:hidden;
+    }
+    .showcase::before{
+      /* glossy metal / mirror edge sweep */
+      content:""; position:absolute; inset:-120px; pointer-events:none;
+      background:conic-gradient(from 0deg,
+        rgba(255,255,255,.0) 0deg,
+        rgba(255,255,255,.22) 25deg,
+        rgba(255,255,255,.0) 60deg,
+        rgba(255,255,255,.0) 300deg);
+      animation:shine 6.5s linear infinite;
+    }
+    @keyframes shine { to { transform:rotate(1turn); } }
+
+    .wallpaper{
+      position:absolute; inset:12px; border-radius:22px; z-index:0;
+      background-image:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.55)), var(--wall2);
+      background-size:cover; background-position:center;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+      filter:saturate(1.05);
+    }
+
+    /* ——— Chat block (same IDs the loader expects) ——— */
+    .stack{ position:relative; z-index:1; display:grid; gap:18px; justify-items:center; }
+
+    .chat-window{
+      width:min(92vw,520px); height:520px; display:flex; flex-direction:column;
+      background:rgba(10,10,10,.86); border:1px solid rgba(148,163,184,.20);
+      border-radius:20px; overflow:hidden;
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      box-shadow:0 24px 70px rgba(0,0,0,.55), 0 0 0 1px rgba(74,144,226,.14) inset;
+    }
+    .chat-header{
+      display:flex; align-items:center; justify-content:space-between; padding:14px 18px;
+      color:#000; font-weight:900; letter-spacing:.2px;
+      background:linear-gradient(90deg, var(--acc), var(--acc-glow));
+    }
+    .chat-close{ background:transparent; border:0; font-size:22px; color:#000; font-weight:900; display:none; }
+
+    .chat-messages{ flex:1; overflow:auto; padding:16px; display:flex; flex-direction:column; gap:12px; background:rgba(5,5,5,.6); }
+    .msg{ padding:12px 16px; border-radius:18px; max-width:85%; font-size:14px; line-height:1.5; }
+    .msg.user{ align-self:flex-end; background:linear-gradient(135deg, rgba(74,144,226,.22), rgba(74,144,226,.12)); border:1px solid rgba(74,144,226,.28); color:#fff; }
+    .msg.bot{ align-self:flex-start; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:#e2e8f0; }
+    .chat-input-area{ display:flex; border-top:1px solid rgba(148,163,184,.20); background:rgba(10,10,10,.92); }
+    .chat-input{ flex:1; border:0; background:transparent; color:#fff; padding:16px 16px; font-size:15px; outline:none; }
+    .chat-send{ border:0; padding:0 24px; font-weight:800; cursor:pointer; color:#000; background:linear-gradient(135deg, var(--acc), var(--acc-glow)); }
+
+    .qr-row{ display:flex; gap:24px; align-items:center; justify-content:center; margin-top:8px; }
+    .qr-wrap{ position:relative; width:var(--qr_size); height:var(--qr_size); }
+    .qr-plate{
+      position:absolute; inset:0; border-radius:22px; display:grid; place-items:center; text-decoration:none;
+      background:linear-gradient(135deg, rgba(255,255,255,.97), rgba(255,255,255,.9));
+      box-shadow:0 24px 70px rgba(74,144,226,.35), inset 0 0 20px rgba(74,144,226,.12);
+      border:1px solid rgba(148,163,184,.25);
+      transition:.2s; overflow:hidden;
+    }
+    .qr-plate:hover{ transform:scale(1.03); }
+    .qr-plate img{ width:100%; height:100%; object-fit:contain; image-rendering:crisp-edges; }
+
+    .bubble{
+      width:var(--bubble_size); height:var(--bubble_size); border-radius:50%;
+      display:grid; place-items:center; cursor:pointer; font-size:22px; color:#000;
+      background:linear-gradient(135deg, var(--acc), var(--acc-glow));
+      box-shadow:0 12px 34px rgba(74,144,226,.55), inset 0 -4px 12px rgba(0,0,0,.25);
+      animation:bubblePulse 2s ease-in-out infinite;
+    }
+    @keyframes bubblePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+    .qr-note{ color:var(--muted); font-size:.95rem; max-width:320px; text-align:center; }
+
+    /* make sure nothing invisible blocks input */
+    #popup-overlay{ display:none !important; pointer-events:none !important; }
+  </style>
 </head>
 <body>
-  <div id="concierge-widget" style="max-width:480px;margin:24px auto;padding:16px;border:1px solid #ddd;border-radius:12px;font-family:system-ui,Arial;">
-    <div style="font-weight:600;margin-bottom:8px;">Test Webhook</div>
-    <div style="display:flex;gap:8px;">
-      <input id="concierge-q" type="text" placeholder="Ihre Frage ..." style="flex:1;padding:10px;border:1px solid #bbb;border-radius:8px" />
-      <button id="concierge-send" style="padding:10px 14px;border:0;border-radius:8px;background:#111;color:#fff;cursor:pointer">Senden</button>
-    </div>
-    <pre id="concierge-out" style="white-space:pre-wrap;margin-top:12px;background:#f8f8f8;padding:12px;border-radius:8px;min-height:48px"></pre>
+
+  <!-- Floating particles (light) -->
+  <div class="particles">
+    <div class="particle" style="left:10%;animation-delay:.0s"></div>
+    <div class="particle" style="left:22%;animation-delay:1.5s"></div>
+    <div class="particle" style="left:34%;animation-delay:3.0s"></div>
+    <div class="particle" style="left:46%;animation-delay:4.5s"></div>
+    <div class="particle" style="left:58%;animation-delay:6.0s"></div>
+    <div class="particle" style="left:70%;animation-delay:7.5s"></div>
+    <div class="particle" style="left:82%;animation-delay:9.0s"></div>
+    <div class="particle" style="left:92%;animation-delay:10.5s"></div>
   </div>
 
-  <script>
-    (function () {
-      const WEBHOOK = 'https://automation.eudemonia-coaching.de/webhook-test/89486b16-646d-48d0-bfb0-e72f726f38d4';
-      const $q   = document.getElementById('concierge-q');
-      const $btn = document.getElementById('concierge-send');
-      const $out = document.getElementById('concierge-out');
+  <div class="container">
+    <!-- HERO -->
+    <header class="hero">
+      <span class="badge">Premium Guest Experience</span>
+      <h1 class="title">Endora – your Digital Concierge</h1>
+      <p class="subtitle">
+        A beautiful, white-label chat that delights guests 24/7. From check-in and house rules to insider tips and bookable extras —
+        Endora answers instantly and helps you earn more with zero extra effort.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="#demo">Try the live demo</a>
+        <a class="btn ghost" href="mailto:contact@eudemonia-coaching.de?subject=Endora%20Inquiry">Talk to us</a>
+      </div>
+    </header>
 
-      async function sendConcierge(question) {
-        const payload = {
-          question: String(question || '').trim(),
-          url: window.location.href,
-          source: 'tester'
-        };
-        if (!payload.question) {
-          $out.textContent = 'Bitte geben Sie eine Frage ein.';
-          return;
-        }
+    <!-- SHOWCASE: glass card with mirror frame + wallpaper + chat + QR -->
+    <section id="demo" class="showcase">
+      <div class="wallpaper" aria-hidden="true"></div>
 
-        $btn.disabled = true;
-        const oldText = $btn.textContent;
-        $btn.textContent = 'Senden …';
+      <div class="stack">
+        <!-- Chat window (IDs used by your loader) -->
+        <div class="chat-window" id="inline-chat">
+          <div class="chat-header">
+            <span>💬 Endora</span>
+            <button class="chat-close" id="inline-close" title="Minimize">×</button>
+          </div>
+          <div class="chat-messages" id="inline-messages"></div>
+          <div class="chat-input-area">
+            <input class="chat-input" id="inline-input" placeholder="Ask anything: check-in, amenities, local tips…" />
+            <button class="chat-send" id="inline-send">Send</button>
+          </div>
+        </div>
 
-        try {
-          const res = await fetch(WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            referrerPolicy: 'no-referrer-when-downgrade',
-            body: JSON.stringify(payload)
-          });
+        <!-- QR + bubble -->
+        <div class="qr-row">
+          <div class="qr-wrap">
+            <a class="qr-plate" id="apt-qr" href="#openChat" title="Scan to open chat">
+              <img id="apt-qr-img" alt="QR to open chat"/>
+            </a>
+          </div>
+          <div class="bubble" id="bubble-btn" aria-label="Open chat">💬</div>
+        </div>
 
-          const raw = await res.text();
-          let output;
-          try { output = JSON.parse(raw); } catch { output = { output: raw }; }
+        <p class="qr-note">
+          Scan the QR to open Endora on your phone — no app required. The desktop bubble does the same.
+        </p>
+      </div>
+    </section>
+  </div>
 
-          const text =
-            output.output ||
-            output.message ||
-            output.text ||
-            (output.choices && output.choices[0] && (output.choices[0].message?.content || output.choices[0].text)) ||
-            raw;
+  <!-- Minimal popup hooks (the loader will handle them if needed) -->
+  <div id="popup-overlay" aria-hidden="true"></div>
+  <div id="popup-wrap" aria-hidden="true" style="display:none"></div>
 
-          $out.textContent = String(text || '').trim() || '(Keine Antwort erhalten)';
-        } catch (err) {
-          $out.textContent = 'Fehler beim Senden: ' + (err?.message || String(err));
-        } finally {
-          $btn.disabled = false;
-          $btn.textContent = oldText;
-        }
-      }
-
-      $btn.addEventListener('click', () => sendConcierge($q.value));
-      $q.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendConcierge($q.value); });
-    })();
+  <!-- Your loader: auto-wires chat + generates QR + posts the real page URL -->
+  <script
+    src="/chat-interface-tech-config/v1/coreloader.js"
+    data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
+    data-brand="Endora – Digital Concierge"
+    data-start-open="false">
   </script>
 </body>
 </html>
