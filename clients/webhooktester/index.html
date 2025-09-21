@@ -44,7 +44,6 @@
       background:linear-gradient(135deg,var(--acc),var(--acc-glow));color:#000;
       font-weight:800;font-size:1.05rem;text-decoration:none;border-radius:50px;
       transition:.3s;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(74,144,226,.4)
-      /* no uppercase */
     }
     .cta-primary:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 15px 60px rgba(74,144,226,.6)}
     .cta-secondary{display:inline-flex;align-items:center;gap:10px;padding:16px 28px;background:transparent;color:var(--acc);font-weight:800;font-size:1rem;text-decoration:none;border:2px solid var(--acc);border-radius:50px;transition:.3s}
@@ -177,8 +176,9 @@
       <h1>Endora - more revenue, less work, happier guests</h1>
       <p class="hero-subtitle">One QR code in the apartment is all it takes—your guests enjoy premium service while you earn automatically.</p>
       <div class="cta-container">
-        <a class="cta-primary" href="mailto:info@eudemonia-coaching.de">✨ Contact</a>
-        <a class="cta-secondary" href="mailto:info@eudemonia-coaching.de">Learn more</a>
+        <!-- Updated to match bottom CTAs + same Stripe links -->
+        <a class="cta-primary" href="https://buy.stripe.com/dRmdRab5I2gycqN3nA0Jq00">Order Endora (with landing page)</a>
+        <a class="cta-secondary" href="https://buy.stripe.com/aFaaEY0r4aN4cqN2jw0Jq01">Order Endora (without landing page)</a>
       </div>
     </section>
 
@@ -256,7 +256,7 @@
       </div>
 
       <div class="legal-line">
-        <a href="https://www.eudemonia-coaching.de/legal" target="_blank" rel="noopener">Legal Notice | Privacy Policy | Terms &amp; Conditions</a>
+        <a href="https://concierge.eudemonia-coaching.de/clients/legal" target="_blank" rel="noopener">Legal Notice | Privacy Policy | Terms &amp; Conditions</a>
       </div>
     </section>
   </div>
@@ -298,28 +298,25 @@
       if (url.searchParams.has('openChat')) url.searchParams.delete('openChat');
       history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
 
-      // Ensure popup is closed at start
       const wrap = document.getElementById('popup-wrap');
       const ovl  = document.getElementById('popup-overlay');
       if (wrap) wrap.style.display = 'none';
       if (ovl)  ovl.style.display  = 'none';
 
-      // Waiting animation wiring
       function wireTyping(messagesId, inputAreaId, typingId){
         const messages  = document.getElementById(messagesId);
         const inputArea = document.getElementById(inputAreaId);
         const typing    = document.getElementById(typingId);
         if(!messages || !inputArea || !typing) return;
-        let waiting = false;
         const mo = new MutationObserver(muts=>{
           muts.forEach(m=>{
             m.addedNodes.forEach(n=>{
               if(!(n instanceof HTMLElement)) return;
               if(n.classList.contains('msg') && n.classList.contains('user')){
-                waiting = true; inputArea.classList.add('waiting'); typing.classList.add('show');
+                inputArea.classList.add('waiting'); typing.classList.add('show');
               }
               if(n.classList.contains('msg') && n.classList.contains('bot')){
-                waiting = false; inputArea.classList.remove('waiting'); typing.classList.remove('show');
+                inputArea.classList.remove('waiting'); typing.classList.remove('show');
               }
             });
           });
@@ -329,7 +326,6 @@
       wireTyping('inline-messages','inline-input-area','inline-typing');
       wireTyping('popup-messages','popup-input-area','popup-typing');
 
-      // Safe welcome rewrite (no infinite loop)
       const DESIRED = "Welcome! 👋 I'm Endora, your Digital Concierge. Ask me anything about your stay.";
       function safeRewrite(containerId){
         const container = document.getElementById(containerId);
@@ -338,19 +334,17 @@
           const firstBot = container.querySelector('.msg.bot');
           if(!firstBot) return;
           const current = (firstBot.textContent || '').trim();
-          if (current === DESIRED) return;            // already correct -> do nothing
+          if (current === DESIRED) return;
           if (current.includes("I'm Endora")) {
-            observer.disconnect();                    // avoid self-trigger loop
+            observer.disconnect();
             firstBot.textContent = DESIRED;
             setTimeout(()=>observer.observe(container,{childList:true,subtree:true}),0);
           }
         });
         observer.observe(container,{childList:true,subtree:true});
       }
-      safeRewrite('inline-messages');
-      safeRewrite('popup-messages');
+      safeRewrite('inline-messages'); safeRewrite('popup-messages');
 
-      // QR opens overlay only
       const qr = document.getElementById('apt-qr');
       qr?.addEventListener('click', (e)=>{
         e.preventDefault();
@@ -358,7 +352,6 @@
         if (wrap) wrap.style.display = 'block';
       });
 
-      // Generate clean QR (no auto-open params)
       (function setQr(){
         const target = location.origin + location.pathname;
         const src = 'https://quickchart.io/qr?text=' + encodeURIComponent(target) +
