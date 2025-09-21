@@ -3,14 +3,32 @@
   // ---- Config ----
   const CFG = Object.assign(
     {
-      webhookUrl: "https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150",
+      webhookUrl: "",
       brandTitle: "Accommodation Concierge",
-      startOpen: false
+      startOpen: false,
+      // optional, kann vom Loader gesetzt werden
+      pageUrl: null
     },
     (typeof window !== "undefined" && window.ENDORA_CONFIG) || {}
   );
+
   if (!CFG.webhookUrl) {
     console.error("[Endora] Missing webhookUrl in ENDORA_CONFIG");
+  }
+
+  // ---- URL helper: kanonische Seiten-URL ermitteln ----
+  function getPageUrl() {
+    const raw = CFG.pageUrl || (typeof window !== "undefined" ? window.location.href : "");
+    try {
+      const u = new URL(raw, (typeof window !== "undefined" ? window.location.origin : undefined));
+      // Query + Hash entfernen für stabile DB-Matches
+      u.search = "";
+      u.hash = "";
+      return u.toString();
+    } catch {
+      // Fallback: primitive Bereinigung
+      return (raw || "").split("#")[0].split("?")[0];
+    }
   }
 
   // ---- Helpers (safe, design-neutral) ----
@@ -69,9 +87,9 @@
     const root = document.getElementById("endora-chat-root");
     const hasInline = document.getElementById("inline-messages");
     const hasPopup = document.getElementById("popup-messages");
-    if (hasInline && hasPopup) return; // page provided its own markup/design
+    if (hasInline && hasPopup) return; // Seite liefert eigenes Markup
 
-    // Minimal neutral markup (no global CSS). You can style via your page CSS.
+    // Minimal neutrales Markup (Seite kann frei stylen)
     const wrap = root || document.body.appendChild(el("div", ""));
     wrap.innerHTML = `
       <div id="endora-inline" style="max-width:400px;margin:0 auto;">
@@ -102,7 +120,7 @@
     `;
   }
 
-  function qs(id) { return document.getElementById(id); }
+  const qs = (id) => document.getElementById(id);
 
   // ---- Initialize (after DOM ready) ----
   function init() {
@@ -239,8 +257,7 @@
           },
           body: JSON.stringify({
             question: text,
-            // --- Mini-Patch: feste Page-URL aus Config, Fallback auf aktuelle URL ---
-            url: (CFG.pageUrl && CFG.pageUrl.length ? CFG.pageUrl : window.location.href),
+            url: getPageUrl(),          // << fix: kanonische URL
             meta: { source: from }
           })
         });
