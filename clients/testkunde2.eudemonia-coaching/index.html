@@ -264,13 +264,19 @@
   </div>
 </div>
 
-<!-- TECH via Loader (übernimmt QR + Events + Webhook) -->
-<script
-  src="/chat-interface-tech-config/v1/coreloader.js"
-  data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
-  data-brand="Endora – digitaler Concierge"
-  data-page-url="https://concierge.eudemonia-coaching.de/"
-  data-start-open="false">
+<!-- TECH: Loader dynamisch einfügen, mit kanonischer data-page-url -->
+<script>
+  (function(){
+    var s = document.createElement('script');
+    s.src = '/chat-interface-tech-config/v1/coreloader.js';
+    s.setAttribute('data-webhook', 'https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150');
+    s.setAttribute('data-brand', 'Endora – digitaler Concierge');
+    // Kanonische URL: origin + pathname (keine Query/Hash)
+    var canonical = location.origin + location.pathname;
+    s.setAttribute('data-page-url', canonical);
+    s.setAttribute('data-start-open', 'false');
+    document.body.appendChild(s);
+  })();
 </script>
 
 </body>
