@@ -44,7 +44,7 @@
       background:linear-gradient(135deg,var(--acc),var(--acc-glow));color:#000;
       font-weight:800;font-size:1.05rem;text-decoration:none;border-radius:50px;
       transition:.3s;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(74,144,226,.4)
-      /* removed uppercase + extra tracking */
+      /* NOTE: no uppercase / tracking */
     }
     .cta-primary:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 15px 60px rgba(74,144,226,.6)}
     .cta-secondary{display:inline-flex;align-items:center;gap:10px;padding:16px 28px;background:transparent;color:var(--acc);font-weight:800;font-size:1rem;text-decoration:none;border:2px solid var(--acc);border-radius:50px;transition:.3s}
@@ -76,11 +76,34 @@
     @keyframes msgPop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
     .user{background:linear-gradient(135deg, rgba(74,144,226,.2), rgba(74,144,226,.1));align-self:flex-end;color:#fff;border:1px solid rgba(74,144,226,.3)}
     .bot{background:rgba(255,255,255,.05);align-self:flex-start;color:#e2e8f0;border:1px solid rgba(255,255,255,.1)}
-    .chat-input-area{display:flex;border-top:1px solid rgba(74,144,226,.2);background:rgba(10,10,10,.9)}
+    .chat-input-area{display:flex;border-top:1px solid rgba(74,144,226,.2);background:rgba(10,10,10,.9);position:relative;overflow:hidden}
     .chat-input{flex:1;border:none;padding:14px 18px;font-size:14px;background:transparent;color:#fff;outline:none}
     .chat-input::placeholder{color:rgba(148,163,184,.7)}
     .chat-send{background:linear-gradient(135deg,var(--acc),var(--acc-glow));color:#000;border:none;padding:0 22px;cursor:pointer;font-weight:800;transition:.3s}
     .chat-send:hover{background:linear-gradient(135deg,var(--acc-glow),var(--acc-glow))}
+
+    /* WAITING EFFECTS */
+    .chat-input-area.waiting::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:2px;
+      background:linear-gradient(90deg, transparent, var(--acc), transparent);
+      background-size:200% 100%;
+      animation:inputShimmer 1.6s ease-in-out infinite;
+      opacity:.6;
+    }
+    @keyframes inputShimmer{0%{background-position:-50% 0}100%{background-position:150% 0}}
+
+    .typing-bubbles{
+      position:absolute; left:14px; bottom:56px; display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+      padding:8px 10px; border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.35);
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); opacity:0; transform:translateY(6px);
+      transition:opacity .25s ease, transform .25s ease;
+    }
+    .typing-bubbles.show{opacity:1; transform:translateY(0)}
+    .typing-bubbles .dot{width:6px;height:6px;border-radius:50%;background:#e5e7eb;opacity:.8;animation:dotBounce 1.2s infinite ease-in-out}
+    .typing-bubbles .dot:nth-child(2){animation-delay:.15s}
+    .typing-bubbles .dot:nth-child(3){animation-delay:.3s}
+    @keyframes dotBounce{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-6px);opacity:1}}
 
     .qr-section{display:flex;align-items:center;justify-content:center;gap:28px;margin-top:22px;position:relative}
     .qr-wrapper{position:relative;width:var(--qr_size);height:var(--qr_size)}
@@ -117,7 +140,6 @@
     .footer-links{margin-top:16px}
     .footer-links a{color:var(--muted);text-decoration:none;margin:0 14px;transition:color .3s ease}
     .footer-links a:hover{color:var(--acc)}
-
     .legal-line{ text-align:center; margin-top:12px; font-size:12px; color:var(--muted); }
     .legal-line a{ color:var(--muted); text-decoration:none; }
     .legal-line a:hover{ color:var(--acc); text-decoration:underline; }
@@ -174,16 +196,21 @@
             <button class="chat-close" id="inline-close" style="display:none">×</button>
           </div>
           <div class="chat-messages" id="inline-messages"></div>
-          <div class="chat-input-area">
+          <div class="chat-input-area" id="inline-input-area">
             <input type="text" class="chat-input" id="inline-input" placeholder="Ask e.g. ‘Where’s a great place to eat tonight?’" />
             <button class="chat-send" id="inline-send">Send</button>
+
+            <!-- typing bubbles (injected/show via JS) -->
+            <div id="inline-typing" class="typing-bubbles" aria-hidden="true">
+              <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
           </div>
         </div>
 
         <!-- QR -->
         <div class="qr-section">
           <div class="qr-wrapper">
-            <a class="qr-container" id="apt-qr" href="#openChat" title="Scan to open the chat">
+            <a class="qr-container" id="apt-qr" href="#" title="Scan to open the chat">
               <img id="apt-qr-img" alt="QR to open chat"/>
             </a>
             <div class="chat-bubble" id="bubble-btn" aria-label="Open chat">💬
@@ -204,26 +231,10 @@
       <p class="section-subtitle">Four simple steps to more revenue and happier guests</p>
 
       <div class="steps-grid">
-        <div class="step">
-          <div class="step-number">1</div>
-          <h4>Place the QR code</h4>
-          <p>Stick it in the apartment — done in 30 seconds.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">2</div>
-          <h4>Guests scan</h4>
-          <p>They scan with their phone → the chat opens instantly, no app needed.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">3</div>
-          <h4>Get recommendations</h4>
-          <p>Local tips and vetted partner services right in the chat.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">4</div>
-          <h4>Earn automatically</h4>
-          <p>Provide outstanding service to your guests and receive commissions with zero extra effort.</p>
-        </div>
+        <div class="step"><div class="step-number">1</div><h4>Place the QR code</h4><p>Stick it in the apartment — done in 30 seconds.</p></div>
+        <div class="step"><div class="step-number">2</div><h4>Guests scan</h4><p>They scan with their phone → the chat opens instantly, no app needed.</p></div>
+        <div class="step"><div class="step-number">3</div><h4>Get recommendations</h4><p>Local tips and vetted partner services right in the chat.</p></div>
+        <div class="step"><div class="step-number">4</div><h4>Earn automatically</h4><p>Provide outstanding service to your guests and receive commissions with zero extra effort.</p></div>
       </div>
     </section>
 
@@ -271,34 +282,118 @@
         <button class="chat-close" id="popup-close" title="Close">×</button>
       </div>
       <div class="chat-messages" id="popup-messages"></div>
-      <div class="chat-input-area">
+      <div class="chat-input-area" id="popup-input-area">
         <input type="text" class="chat-input" id="popup-input" placeholder="Ask about check-in, amenities…" />
         <button class="chat-send" id="popup-send">Send</button>
+        <div id="popup-typing" class="typing-bubbles" aria-hidden="true">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Small helper: rewrite the seed welcome text once (no auto-open) -->
+  <!-- Helpers: force closed on load + friendly welcome + waiting animation controller -->
   <script>
-    (function() {
-      const desired = "Welcome! 👋 I'm Endora, your Digital Concierge. Ask me anything about your stay.";
-      function tryFix(container) {
-        if (!container) return;
-        const bot = container.querySelector('.msg.bot');
-        if (bot && bot.textContent && bot.textContent.includes("I'm Endora — Digital Concierge")) {
-          bot.textContent = desired;
-        }
+    (function(){
+      // 1) Never auto-open on arrival (strip any openChat hash/query & hard-close popups)
+      const url = new URL(window.location.href);
+      if (url.hash === '#openChat') url.hash = '';
+      if (url.searchParams.has('openChat')) url.searchParams.delete('openChat');
+      const cleaned = url.pathname + (url.searchParams.toString() ? ('?' + url.searchParams) : '');
+      if (location.href !== (url.origin + cleaned)) {
+        history.replaceState({}, '', cleaned);
       }
-      const ids = ['inline-messages','popup-messages'];
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        // attempt now
-        tryFix(el);
-        // watch future additions
-        const mo = new MutationObserver(() => tryFix(el));
-        mo.observe(el, { childList: true, subtree: true });
+      function hardClose(){
+        const wrap = document.getElementById('popup-wrap');
+        const ovl  = document.getElementById('popup-overlay');
+        if (wrap) wrap.style.display = 'none';
+        if (ovl)  ovl.style.display  = 'none';
+      }
+      hardClose();
+      setTimeout(hardClose, 0); // in case anything tried to open immediately
+
+      // 2) Nice waiting animation based on DOM changes
+      function wireTyping(ids){
+        const [messagesId, inputAreaId, typingId] = ids;
+        const messages  = document.getElementById(messagesId);
+        const inputArea = document.getElementById(inputAreaId);
+        const typing    = document.getElementById(typingId);
+        if(!messages || !inputArea || !typing) return;
+
+        let waiting = false;
+        function onUserSent(){
+          waiting = true;
+          inputArea.classList.add('waiting');
+          typing.classList.add('show');
+        }
+        function onBotAnswered(){
+          if(!waiting) return;
+          waiting = false;
+          inputArea.classList.remove('waiting');
+          typing.classList.remove('show');
+        }
+        const mo = new MutationObserver(muts=>{
+          for(const m of muts){
+            m.addedNodes.forEach(node=>{
+              if(!(node instanceof HTMLElement)) return;
+              if(node.classList.contains('msg')){
+                if(node.classList.contains('user')) onUserSent();
+                if(node.classList.contains('bot'))  onBotAnswered();
+              }
+            });
+          }
+        });
+        mo.observe(messages, {childList:true});
+
+        // Also stop the animation if input changes again before a bot message arrives
+        const input = inputArea.querySelector('input[type="text"]');
+        input?.addEventListener('input', ()=>{ if(!waiting) { typing.classList.remove('show'); inputArea.classList.remove('waiting'); }});
+      }
+      wireTyping(['inline-messages','inline-input-area','inline-typing']);
+      wireTyping(['popup-messages','popup-input-area','popup-typing']);
+
+      // 3) Rewrite the very first welcome line (non-intrusive)
+      const desired = "Welcome! 👋 I'm Endora, your Digital Concierge. Ask me anything about your stay.";
+      function rewriteWelcome(containerId){
+        const el = document.getElementById(containerId);
+        if(!el) return;
+        const tryFix = () => {
+          const firstBot = el.querySelector('.msg.bot');
+          if(firstBot && firstBot.textContent && firstBot.textContent.includes("I'm Endora")) {
+            firstBot.textContent = desired;
+          }
+        };
+        tryFix();
+        new MutationObserver(tryFix).observe(el, {childList:true, subtree:true});
+      }
+      rewriteWelcome('inline-messages');
+      rewriteWelcome('popup-messages');
+
+      // 4) QR: keep on-page, only opens chat overlay—not whole page
+      const qr = document.getElementById('apt-qr');
+      qr?.addEventListener('click', (e)=>{
+        e.preventDefault();
+        // simulate clicking the floating bubble the core attaches to
+        const fauxBtn = document.getElementById('inline-close'); // header exists; rely on core to bind open to bubble
+        // if your core exposes an open function, call it here instead.
+        const overlay = document.getElementById('popup-overlay');
+        const wrap    = document.getElementById('popup-wrap');
+        if (overlay && wrap){ overlay.style.display='block'; wrap.style.display='block'; }
       });
+
+      // Provide a QR image of this clean URL (no auto-open params)
+      (function setQr(){
+        const base = location.origin + location.pathname;
+        const target = base; // no hash/query to avoid auto-open
+        const src = 'https://quickchart.io/qr?text=' + encodeURIComponent(target) +
+                    '&size=260&margin=8&ecLevel=H&format=png' +
+                    '&dark=%23000000&light=%23ffffff';
+        const fallback = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' + encodeURIComponent(target);
+        const img = document.getElementById('apt-qr-img');
+        if(!img) return;
+        img.onerror = () => { if(img.dataset.fallback!=='1'){ img.dataset.fallback='1'; img.src=fallback; } };
+        img.src = src;
+      })();
     })();
   </script>
 
