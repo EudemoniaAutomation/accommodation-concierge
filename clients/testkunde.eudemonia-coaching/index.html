@@ -1,4 +1,4 @@
-<!-- ===== Accommodation-Concierge: Chat + QR (vertical, black background) ===== -->
+<!-- ===== Endora: Chat + QR (vertical, black background) ===== -->
 <div class="apt-landing"
      style="
        --bg:#000000; --ink:#e9f1ee; --muted:#aab7b1; --acc:#bff2da; --card:#171717; --ring:rgba(191,242,218,.25);
@@ -115,9 +115,9 @@
     <div class="apt-card">
       <h2 class="apt-h1">
         <span class="prefix">Willkommen bei deinem</span>
-        <span class="main">Accommodation-Concierge 🛎️</span>
+        <span class="main">Endora 🛎️</span>
       </h2>
-      <p class="apt-lead">Frag einfach los – zu Check-in, Hausregeln, Ausstattung oder Tipps in der Umgebung. Der Accommodation Concierge hilft dir sofort weiter.</p>
+      <p class="apt-lead">Frag einfach los – zu Check-in, Hausregeln, Ausstattung oder Tipps in der Umgebung. Endora hilft dir sofort weiter.</p>
 
       <div class="apt-badges">
         <span class="apt-pill">🕒 24/7 Gästeservice</span>
@@ -146,7 +146,7 @@
     <div class="apt-card chat-host">
       <div class="chat-window" id="inline-chat">
         <div class="chat-header">
-          <span>💬 Accommodation-Concierge</span>
+          <span>💬 Endora</span>
           <button class="chat-close" id="inline-close" title="Minimieren" style="display:none">×</button>
         </div>
         <div class="chat-messages" id="inline-messages"></div>
@@ -172,7 +172,7 @@
       <div class="popup-wrap" id="popup-wrap">
         <div class="chat-window" id="popup-chat">
           <div class="chat-header">
-            <span>💬 Accommodation-Concierge</span>
+            <span>💬 Endora</span>
             <button class="chat-close" id="popup-close" title="Schließen">×</button>
           </div>
           <div class="chat-messages" id="popup-messages"></div>
@@ -185,131 +185,12 @@
     </div>
   </div>
 
-  <!-- Dein bestehendes Script bleibt unverändert -->
-  <script>
-    (function(){
-      const webhookUrl = "https://automation.eudemonia-coaching.de/webhook/chat-webhook";
-      const APT_NAME = "Ihr Apartment";
-      const QR_IMG  = document.getElementById('apt-qr-img');
-      const QR_LINK = document.getElementById('apt-qr');
-
-      const inline = { messages: document.getElementById('inline-messages'), input: document.getElementById('inline-input'), send: document.getElementById('inline-send') };
-      const popup  = { wrap: document.getElementById('popup-wrap'), messages: document.getElementById('popup-messages'), input: document.getElementById('popup-input'), send: document.getElementById('popup-send'), openBtn: document.getElementById('bubble-btn'), badge: document.getElementById('bubble-badge'), closeBtn: document.getElementById('popup-close') };
-
-      let unread = 0;
-      function openPopup(){ popup.wrap.style.display='block'; unread=0; popup.badge.style.display='none'; setTimeout(()=>{ popup.input?.focus(); document.querySelector('.chat-host')?.scrollIntoView({behavior:'smooth', block:'center'}); }, 50); }
-      function closePopup(){ popup.wrap.style.display='none'; }
-      popup.openBtn.addEventListener('click', openPopup);
-      popup.closeBtn.addEventListener('click', closePopup);
-      QR_LINK.addEventListener('click', function(e){ e.preventDefault(); openPopup(); });
-
-      function tryOpenFromUrl(){
-        const s = new URLSearchParams(location.search);
-        if (location.hash === '#openChat' || s.get('openChat') === '1'){ openPopup(); }
-      }
-      window.addEventListener('hashchange', tryOpenFromUrl);
-
-      (function setQr(){
-        var base = location.href.split('#')[0];
-        var url = new URL(base); url.searchParams.set('openChat','1');
-        var target = url.toString() + '#openChat';
-        var qrMargin = 8;
-        var src1 = 'https://quickchart.io/qr?text=' + encodeURIComponent(target) + '&size=512&margin=' + qrMargin + '&ecLevel=H&format=png' + '&dark=%23000000' + '&light=%23ffffff00';
-        var src2 = 'https://chart.googleapis.com/chart?cht=qr&chs=512x512&chld=H|1&chl=' + encodeURIComponent(target);
-        var img = QR_IMG; img.onerror = function(){ if (img.dataset.fallback !== '1'){ img.dataset.fallback='1'; img.src = src2; } }; img.src = src1;
-      })();
-
-      function el(tag, cls, text){ const e=document.createElement(tag); if(cls)e.className=cls; if(text!=null)e.innerText=text; return e; }
-
-      function prettyLabel(href, max=48) {
-        try { const u = new URL(href); const host = u.hostname.replace(/^www\./,''); let path = (u.pathname||'').replace(/\/$/,''); if (path.length>24) path = path.slice(0,24)+'…'; const label = host + (path?('/'+path):''); return label.length>max?label.slice(0,max)+'…':label; }
-        catch { return href.length>max?href.slice(0,max)+'…':href; }
-      }
-      function linkifyInto(container){
-        const URL_RE=/((https?:\/\/|www\.)[^\s<>"'`]+)(?![^<]*>|[^&]*;)/gi;
-        function walk(node){
-          if(node.nodeType===3){
-            const text=node.nodeValue; if(!text) return;
-            const frag=document.createDocumentFragment(); let last=0,m; URL_RE.lastIndex=0;
-            while((m=URL_RE.exec(text))!==null){
-              const raw=m[0]; const href=raw.startsWith('www.')?'https://'+raw:raw; const endClean=raw.replace(/[),.;!?]+$/,'');
-              if(m.index>last) frag.appendChild(document.createTextNode(text.slice(last,m.index)));
-              const a=document.createElement('a'); a.href=href; a.target='_blank'; a.rel='noopener noreferrer nofollow'; a.textContent=prettyLabel(href);
-              frag.appendChild(a); last=m.index+raw.length;
-              const trailing=raw.slice(endClean.length); if(trailing) frag.appendChild(document.createTextNode(trailing));
-            }
-            if(last===0) return; if(last<text.length) frag.appendChild(document.createTextNode(text.slice(last)));
-            node.parentNode.replaceChild(frag,node);
-          } else if(node.nodeType===1 && node.childNodes){ Array.from(node.childNodes).forEach(walk); }
-        }
-        walk(container);
-      }
-
-      function appendMsg(target, text, sender){
-        const m = el('div','msg '+sender);
-        m.textContent = text; linkifyInto(m);
-        target.appendChild(m); target.scrollTop = target.scrollHeight;
-      }
-
-      function addMessageAll(text, sender, save=true){
-        appendMsg(inline.messages, text, sender);
-        appendMsg(popup.messages,  text, sender);
-        if(save){
-          const history = JSON.parse(localStorage.getItem('aptChatHistory') || '[]');
-          history.push({ text, sender }); localStorage.setItem('aptChatHistory', JSON.stringify(history));
-        }
-        if(sender==='bot' && popup.wrap.style.display==='none'){
-          unread++; popup.badge.innerText = unread; popup.badge.style.display = 'block';
-        }
-      }
-      function typingOn(){ appendMsg(inline.messages,'Tippt…','bot'); inline.messages.lastChild.id='inline-typing'; appendMsg(popup.messages,'Tippt…','bot'); popup.messages.lastChild.id='popup-typing'; }
-      function typingOff(){ const a=document.getElementById('inline-typing'); if(a) a.remove(); const b=document.getElementById('popup-typing'); if(b) b.remove(); }
-
-      function loadHistory(){
-        const history = JSON.parse(localStorage.getItem('aptChatHistory') || '[]');
-        history.forEach(m=>addMessageAll(m.text,m.sender,false));
-        if(history.length===0){
-          addMessageAll(`Willkommen! 👋
-Ich helfe dir bei Check-in, Hausregeln, Ausstattung und den besten Tipps in der Umgebung. Frag einfach los.`, 'bot', true);
-        }
-      }
-
-      async function readAnswerAsText(res){
-        var ct=(res.headers.get('content-type')||'').toLowerCase();
-        if(ct.indexOf('application/json')!==-1){
-          try{
-            var data=await res.json(); if(data==null) return '';
-            if(typeof data==='string') return data;
-            var candidates=[]; if(data.answer) candidates.push(data.answer);
-            if(data.output) candidates.push(data.output);
-            if(data.text) candidates.push(data.text);
-            if(data.message) candidates.push(data.message);
-            if(data.content) candidates.push(data.content);
-            if(data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content){ candidates.push(data.choices[0].message.content); }
-            return candidates.length?String(candidates[0]):'';
-          }catch(e){ return ''; }
-        }
-        try{ return await res.text(); }catch(e){ return ''; }
-      }
-
-      async function sendMessage(from){
-        const ctx=(from==='popup')?{input:popup.input}:{input:inline.input};
-        const text=(ctx.input.value||'').trim(); if(!text) return;
-        addMessageAll(text,'user'); ctx.input.value=''; typingOn();
-        try{
-          const res=await fetch(webhookUrl,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json, text/plain; q=0.9, */*; q=0.8'},body:JSON.stringify({question:text, url:window.location.href, meta:{ apartment:APT_NAME, source:from }})});
-          const answer=await readAnswerAsText(res);
-          typingOff(); addMessageAll((answer&&String(answer).trim())?String(answer).trim():'Keine Antwort erhalten.','bot');
-        }catch(e){ typingOff(); addMessageAll('Fehler beim Senden.','bot'); }
-      }
-
-      document.getElementById('inline-send').addEventListener('click', ()=>sendMessage('inline'));
-      document.getElementById('popup-send').addEventListener('click',  ()=>sendMessage('popup'));
-      document.getElementById('inline-input').addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage('inline'); });
-      document.getElementById('popup-input').addEventListener('keypress',  e=>{ if(e.key==='Enter') sendMessage('popup'); });
-
-      loadHistory(); tryOpenFromUrl();
-    })();
+  <!-- TECH: Loader nutzen (URL wird automatisch kanonisiert: origin + pathname) -->
+  <script
+    src="/chat-interface-tech-config/v1/coreloader.js"
+    data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
+    data-brand="Endora"
+    data-start-open="false">
   </script>
 </div>
 <!-- ===== Ende ===== -->
