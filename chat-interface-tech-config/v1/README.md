@@ -1,195 +1,103 @@
-Endora Chat Interface – README
+# Endora Chat Interface · README
 
-(Deutsch unten, English below)
+---
 
-🇩🇪 Deutsch
-Zweck
+## 🇩🇪 Deutsch
 
-Dieses Verzeichnis stellt die zentrale Technik für das Endora-Chat-Interface bereit.
-Alle Landingpages (auch Kundenseiten) binden nur 1 Script ein und erhalten damit:
+### Überblick
+Dieses Verzeichnis stellt die zentrale Technik für das Endora-Chat-Interface bereit.  
+Es gibt drei Dateien, die unterschiedliche Aufgaben haben:
 
-Chat-Bubble + Popup-Chat (synchron)
+- **chat-interface-core.js**  
+  Enthält die komplette Chat-Logik (Bubble, Popup, Webhook-Anbindung, QR-Codes, Voucher-Handling, Linkify, Markdown).
 
-Webhook-POST an n8n
+- **coreloader.js**  
+  Ein kleiner Loader, der per `data-*` Attribute konfiguriert wird und automatisch den Core lädt.  
+  Vorteil: Alle Seiten müssen nur ein einziges Script einbinden.
 
-Typing-Indicator
+- **clientcodesnippet.html**  
+  Beispiel-Snippet zum Copy/Paste für Kunden. Zeigt, wie der Loader eingebunden wird.
 
-Antwort-Parsing inkl. Voucher (QR-Code + expires_at)
+---
 
-Sicheres Sanitizing + Linkify + Light-Markdown
+### Nutzung
 
-QR-Open-Flow (?openChat=1#openChat)
-
-Fehlerbehandlung
-
-Inhalte
-/chat-interface-tech-config/v1/
-  ├─ chat-interface-core.js   # gesamte Chat-Logik (zentrales Update)
-  ├─ coreloader.js            # kleiner Loader, liest data-* und lädt den Core
-  └─ clientcodesnippet.html   # Copy/Paste-Snippet für Kunden
-
-Einbindung (empfohlen, über Loader)
-
-Füge direkt vor </body> der Seite ein:
-
-<script
-  src="https://DEINE-DOMAIN/chat-interface-tech-config/v1/coreloader.js"
-  data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
-  data-brand="Endora Concierge"
-  data-page-url="https://DEINE-DOMAIN/clients/MEIN_CLIENT/"  <!-- optional, aber empfohlen -->
-  data-start-open="false">
-</script>
-
-
-Parameter (data-Attribute):
-
-data-webhook (Pflicht): dein n8n-Webhook für diese Seite.
-
-data-brand (optional): Titel im Chat-Header.
-
-data-page-url (optional, empfohlen): feste Landingpage-URL als Kennung je Kunde.
-→ Wird im Request als url gesendet. Fallback ist window.location.href.
-
-data-start-open (optional): "true" öffnet den Chat direkt beim Laden.
-
-Hinweis: Der Loader erzeugt bei Bedarf automatisch <div id="endora-chat-root"></div> und lädt einmalig chat-interface-core.js.
-
-Alternative: Direkte Core-Einbindung (nur wenn nötig)
-
-Wenn du ohne Loader arbeiten willst, ergänze in deiner Seite:
-
-<div id="endora-chat-root"></div>
-<script>
-  window.ENDORA_CONFIG = {
-    webhookUrl: "https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150",
-    brandTitle: "Endora Concierge",
-    pageUrl: "https://DEINE-DOMAIN/clients/MEIN_CLIENT/", // optional
-    startOpen: false
-  };
-</script>
-<script src="https://DEINE-DOMAIN/chat-interface-tech-config/v1/chat-interface-core.js"></script>
-
-Versionierung & Cache
-
-Breaking Changes → neuen Ordner v2/ anlegen und Seiten darauf umstellen.
-
-Kleinere Fixes → gleiche Version, optional Cache-Bust:
-/v1/coreloader.js?v=2025-09-21-1
-
-Tests (Checkliste)
-
-Script lädt ohne 404 (DevTools → Network).
-
-Bubble sichtbar, Popup öffnet/ schließt, ?openChat=1#openChat öffnet Chat.
-
-Nachricht → Request am Webhook, Antwort in Inline & Popup.
-
-JSON-Antwort mit qr_url rendert Voucher inkl. QR.
-
-Links im Bot-Text sind klickbar („Link“).
-
-Bei data-page-url wird genau diese URL im Payload gesendet.
-
-Typische Stolpersteine
-
-CSP blockiert externe Scripts → Domain zur CSP erlauben.
-
-Ad-/Script-Blocker → ggf. Kunden hinweisen.
-
-Falscher Pfad: Prüfe, ob CNAME/.nojekyll korrekt sind und die URL stimmt.
-
-🇬🇧 English
-Purpose
-
-This folder provides the central tech for the Endora chat interface.
-Any landing page (including client sites) includes one script and gets:
-
-Chat bubble + popup chat (synced)
-
-Webhook POST to n8n
-
-Typing indicator
-
-Response parsing incl. vouchers (QR + expires_at)
-
-Safe sanitizing + linkify + light-markdown
-
-QR open flow (?openChat=1#openChat)
-
-Error handling
-
-Contents
-/chat-interface-tech-config/v1/
-  ├─ chat-interface-core.js   # full chat logic (central updates)
-  ├─ coreloader.js            # tiny loader that reads data-* and loads the core
-  └─ clientcodesnippet.html   # copy/paste snippet for customers
-
-Recommended embed (via Loader)
-
-Place right before </body>:
-
+**Empfohlen (über Loader):**
+```html
 <script
   src="https://YOUR-DOMAIN/chat-interface-tech-config/v1/coreloader.js"
-  data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
+  data-webhook="https://automation.eudemonia-coaching.de/webhook/xxxx"
   data-brand="Endora Concierge"
-  data-page-url="https://YOUR-DOMAIN/clients/MY_CLIENT/"  <!-- optional but recommended -->
+  data-page-url="https://YOUR-DOMAIN/clients/CLIENT_SLUG/"
   data-start-open="false">
 </script>
+Alternative (direkter Core-Import):
 
-
-Params (data attributes):
-
-data-webhook (required): your n8n webhook for this page.
-
-data-brand (optional): header title.
-
-data-page-url (optional, recommended): fixed landing page URL as a per-client identifier.
-→ Sent as url in the request. Fallback is window.location.href.
-
-data-start-open (optional): "true" opens the chat on load.
-
-Note: The loader auto-creates <div id="endora-chat-root"></div> if missing and loads chat-interface-core.js once.
-
-Alternative: Direct Core embed (only if needed)
-
-If you want to skip the loader, add:
-
+html
+Copy code
 <div id="endora-chat-root"></div>
 <script>
   window.ENDORA_CONFIG = {
-    webhookUrl: "https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150",
+    webhookUrl: "https://automation.eudemonia-coaching.de/webhook/xxxx",
     brandTitle: "Endora Concierge",
-    pageUrl: "https://YOUR-DOMAIN/clients/MY_CLIENT/", // optional
+    pageUrl: "https://YOUR-DOMAIN/clients/CLIENT_SLUG/", // optional
     startOpen: false
   };
 </script>
 <script src="https://YOUR-DOMAIN/chat-interface-tech-config/v1/chat-interface-core.js"></script>
+🇬🇧 English
+Overview
+This directory provides the central tech for the Endora chat interface.
+It contains three files with different purposes:
 
-Versioning & Cache
+chat-interface-core.js
+Contains the full chat logic (bubble, popup, webhook integration, QR codes, voucher handling, linkify, markdown).
 
-Breaking changes → create v2/ and switch pages to it.
+coreloader.js
+A small loader that is configured via data-* attributes and automatically loads the core.
+Advantage: all pages only need to include one script.
 
-Minor fixes → keep version, optionally cache-bust:
-/v1/coreloader.js?v=2025-09-21-1
+clientcodesnippet.html
+Example snippet for copy/paste by clients. Shows how to include the loader.
 
-Tests (Checklist)
+Usage
+Recommended (via loader):
 
-Script loads without 404 (DevTools → Network).
+html
+Copy code
+<script
+  src="https://YOUR-DOMAIN/chat-interface-tech-config/v1/coreloader.js"
+  data-webhook="https://automation.eudemonia-coaching.de/webhook/xxxx"
+  data-brand="Endora Concierge"
+  data-page-url="https://YOUR-DOMAIN/clients/CLIENT_SLUG/"
+  data-start-open="false">
+</script>
+Alternative (direct core import):
 
-Bubble visible, popup open/close works; ?openChat=1#openChat opens chat.
+html
+Copy code
+<div id="endora-chat-root"></div>
+<script>
+  window.ENDORA_CONFIG = {
+    webhookUrl: "https://automation.eudemonia-coaching.de/webhook/xxxx",
+    brandTitle: "Endora Concierge",
+    pageUrl: "https://YOUR-DOMAIN/clients/CLIENT_SLUG/", // optional
+    startOpen: false
+  };
+</script>
+<script src="https://YOUR-DOMAIN/chat-interface-tech-config/v1/chat-interface-core.js"></script>
+markdown
+Copy code
 
-Message → webhook request; response shows in inline & popup.
+👉 Diese README ist jetzt wirklich **kurz, nur Text, übersichtlich in Markdown**.  
 
-JSON response with qr_url renders voucher + QR.
+Willst du, dass ich noch eine Mini-Tabelle für die `data-*` Attribute einfüge (deutsch + englisch), damit es sofort verständlich ist?
 
-Bot text links are clickable (“Link”).
 
-With data-page-url, that exact URL is sent in the payload.
 
-Common pitfalls
 
-CSP blocks external scripts → allow your domain in CSP.
 
-Ad/script blockers → inform customers if needed.
 
-Wrong path: verify CNAME/.nojekyll and the exact script URL.
+
+
+Ask ChatGPT
