@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Accommodation Concierge - Premium Guest Experience</title>
+<title>Endora – digitaler Concierge · Premium Guest Experience</title>
 </head>
 <body style="margin: 0; padding: 0; background: #000;">
 
-<!-- ===== Accommodation-Concierge: Premium Landing Page ===== -->
+<!-- ===== Endora: Premium Landing Page ===== -->
 <div class="apt-landing">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -167,7 +167,7 @@
     <!-- Hero Section -->
     <div class="hero-section">
       <div class="hero-badge">✨ Die Zukunft der Gästekommunikation</div>
-      <h1 class="hero-title">Accommodation Concierge</h1>
+      <h1 class="hero-title">Endora – digitaler Concierge</h1>
       <p class="hero-subtitle">Verwandeln Sie Ihre Gästeerfahrung in ein unvergessliches Erlebnis mit KI-gestütztem 24/7 Support</p>
     </div>
 
@@ -176,13 +176,13 @@
       <!-- Features Card -->
       <div class="features-card">
         <h2 class="section-title">
-          Willkommen bei deinem Accommodation-Concierge 
+          Willkommen bei deinem Endora – digitaler Concierge 
           <span class="emoji">🛎️</span>
         </h2>
         
         <p style="text-align:center;color:var(--muted);margin-bottom:30px;font-size:1.1rem">
           Frag einfach los – zu Check-in, Hausregeln, Ausstattung oder Tipps in der Umgebung. 
-          Der Accommodation Concierge hilft dir sofort weiter.
+          Endora hilft dir sofort weiter.
         </p>
 
         <div class="feature-grid">
@@ -215,7 +215,7 @@
 
           <div class="chat-window" id="inline-chat">
             <div class="chat-header">
-              <span>💬 Accommodation-Concierge</span>
+              <span>💬 Endora – digitaler Concierge</span>
               <button class="chat-close" id="inline-close" title="Minimieren" style="display:none">×</button>
             </div>
             <div class="chat-messages" id="inline-messages"></div>
@@ -252,7 +252,7 @@
   <div class="popup-wrap" id="popup-wrap">
     <div class="chat-window" id="popup-chat">
       <div class="chat-header">
-        <span>💬 Accommodation-Concierge</span>
+        <span>💬 Endora – digitaler Concierge</span>
         <button class="chat-close" id="popup-close" title="Schließen">×</button>
       </div>
       <div class="chat-messages" id="popup-messages"></div>
@@ -264,134 +264,13 @@
   </div>
 </div>
 
-<script>
-(() => {
-  const webhookUrl = "https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150";
-
-  // DOM refs
-  const inline = {
-    messages: document.getElementById('inline-messages'),
-    input: document.getElementById('inline-input'),
-    send: document.getElementById('inline-send')
-  };
-  const popup = {
-    wrap: document.getElementById('popup-wrap'),
-    overlay: document.getElementById('popup-overlay'),
-    messages: document.getElementById('popup-messages'),
-    input: document.getElementById('popup-input'),
-    send: document.getElementById('popup-send'),
-    closeBtn: document.getElementById('popup-close')
-  };
-  const bubbleBtn = document.getElementById('bubble-btn');
-  const bubbleBadge = document.getElementById('bubble-badge');
-  const QR_IMG  = document.getElementById('apt-qr-img');
-  const QR_LINK = document.getElementById('apt-qr');
-
-  // ----- Popup controls (open/close/toggle) -----
-  function openPopup() {
-    popup.wrap.style.display = 'block';
-    popup.overlay.style.display = 'block';
-    bubbleBadge.style.display = 'none';
-    setTimeout(() => popup.input?.focus(), 50);
-  }
-  function closePopup() {
-    popup.wrap.style.display = 'none';
-    popup.overlay.style.display = 'none';
-  }
-  function togglePopup() {
-    const isOpen = popup.wrap.style.display === 'block';
-    if (isOpen) closePopup(); else openPopup();
-  }
-  bubbleBtn.addEventListener('click', togglePopup);
-  popup.closeBtn.addEventListener('click', closePopup);
-  popup.overlay.addEventListener('click', closePopup);
-
-  // ----- Make QR open ONLY the chat overlay (no page navigation) -----
-  QR_LINK.addEventListener('click', (e) => { e.preventDefault(); openPopup(); });
-
-  // ----- Generate QR that encodes "?openChat=1#openChat" -----
-  (function setQr(){
-    // base without existing hash
-    const base = location.href.split('#')[0];
-    const url  = new URL(base);
-    url.searchParams.set('openChat', '1');  // lightweight signal
-    const target = url.toString() + '#openChat';
-
-    // QuickChart (transparent light, black dark) + fallback (Google)
-    const qrMargin = 8;
-    const src1 = 'https://quickchart.io/qr?text=' + encodeURIComponent(target) +
-                 '&size=512&margin=' + qrMargin + '&ecLevel=H&format=png' +
-                 '&dark=%23000000&light=%23ffffff00';
-    const src2 = 'https://chart.googleapis.com/chart?cht=qr&chs=512x512&chld=H|1&chl=' + encodeURIComponent(target);
-
-    const img = QR_IMG;
-    img.onerror = function(){ if (img.dataset.fallback !== '1'){ img.dataset.fallback='1'; img.src = src2; } };
-    img.src = src1;
-  })();
-
-  // ----- Auto-open if user came via QR (hash/query) -----
-  function tryOpenFromUrl(){
-    const s = new URLSearchParams(location.search);
-    if (location.hash === '#openChat' || s.get('openChat') === '1') openPopup();
-  }
-  window.addEventListener('hashchange', tryOpenFromUrl);
-
-  // ----- Messaging helpers (kept simple) -----
-  function el(tag, cls, text){ const e=document.createElement(tag); if(cls)e.className=cls; if(text!=null)e.innerText=text; return e; }
-  function appendMsg(target, text, sender){
-    const m = el('div', 'msg ' + sender);
-    m.textContent = text;
-    target.appendChild(m);
-    target.scrollTop = target.scrollHeight;
-  }
-  function addMessageAll(text, sender){
-    appendMsg(inline.messages, text, sender);
-    appendMsg(popup.messages,  text, sender);
-    if(sender==='bot' && popup.wrap.style.display!=='block'){ bubbleBadge.style.display='block'; bubbleBadge.textContent='1'; }
-  }
-
-  // Seed welcome once
-  (function seed(){
-    addMessageAll("Willkommen! 👋 Ich helfe dir bei Check-in, Hausregeln und den besten Tipps in der Umgebung. Frag einfach los.", "bot");
-  })();
-
-  // Send handler
-  async function sendMessage(from){
-    const input = from==='popup' ? popup.input : inline.input;
-    const text = (input.value || '').trim();
-    if(!text) return;
-    addMessageAll(text, 'user');
-    input.value = '';
-
-    try{
-      const res = await fetch(webhookUrl, {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json', 'Accept':'application/json, text/plain; q=0.9, */*; q=0.8' },
-        body: JSON.stringify({ question:text, url:window.location.href, meta:{ source:from } })
-      });
-      const ct = (res.headers.get('content-type')||'').toLowerCase();
-      let answer = '';
-      if (ct.includes('application/json')) {
-        try {
-          const data = await res.json();
-          answer = (data?.answer || data?.text || data?.message || data?.content || '') + '';
-        } catch {}
-      }
-      if (!answer) { try { answer = await res.text(); } catch {} }
-      addMessageAll(answer || 'Keine Antwort erhalten.', 'bot');
-    }catch(e){
-      addMessageAll('Fehler beim Senden.', 'bot');
-    }
-  }
-
-  document.getElementById('inline-send').addEventListener('click', ()=>sendMessage('inline'));
-  document.getElementById('popup-send').addEventListener('click',  ()=>sendMessage('popup'));
-  document.getElementById('inline-input').addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage('inline'); });
-  document.getElementById('popup-input').addEventListener('keypress',  e=>{ if(e.key==='Enter') sendMessage('popup'); });
-
-  // Initial URL check
-  tryOpenFromUrl();
-})();
+<!-- TECH via Loader (übernimmt QR + Events + Webhook) -->
+<script
+  src="/chat-interface-tech-config/v1/coreloader.js"
+  data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
+  data-brand="Endora – digitaler Concierge"
+  data-page-url="https://concierge.eudemonia-coaching.de/"
+  data-start-open="false">
 </script>
 
 </body>
