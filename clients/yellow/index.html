@@ -85,7 +85,7 @@
   </style>
 </head>
 <body>
-  <!-- Particles unchanged -->
+  <!-- Particles -->
   <div class="particles">
     <div class="particle" style="left:10%;animation-delay:0s"></div>
     <div class="particle" style="left:20%;animation-delay:2s"></div>
@@ -105,7 +105,7 @@
       <p class="hero-subtitle">Your personal AI assistant for check-in, house rules, and local recommendations</p>
     </div>
 
-    <!-- UNVERÄNDERTES UI-MARKUP (Core/Loader hängt sich hier an) -->
+    <!-- UI-MARKUP (Core/Loader hängt sich hier an) -->
     <div class="chat-window" id="inline-chat">
       <div class="chat-header">
         <span>💬 Endora</span>
@@ -130,7 +130,7 @@
     </div>
   </div>
 
-  <!-- Popup (gleiches Markup) -->
+  <!-- Popup -->
   <div class="popup-overlay" id="popup-overlay"></div>
   <div class="popup-wrap" id="popup-wrap">
     <div class="chat-window" id="popup-chat">
@@ -146,13 +146,26 @@
     </div>
   </div>
 
-  <!-- TECH: nur unser Loader (übernimmt vorhandenes DOM, setzt QR & Events, sendet an Webhook) -->
-  <script
-    src="/chat-interface-tech-config/v1/coreloader.js"
-    data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
-    data-brand="Endora"
-    data-page-url="https://concierge.eudemonia-coaching.de/"
-    data-start-open="false">
+  <!-- TECH: Loader dynamisch einfügen + kanonische page-url automatisch setzen -->
+  <script>
+    (function(){
+      var s = document.createElement('script');
+      s.src = '/chat-interface-tech-config/v1/coreloader.js';
+      s.setAttribute('data-webhook','https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150');
+      s.setAttribute('data-brand','Endora');
+      // Kanonische URL: origin + pathname (ohne Query/Hash)
+      try {
+        var u = new URL(window.location.href);
+        u.search = '';
+        u.hash   = '';
+        s.setAttribute('data-page-url', u.origin + u.pathname);
+      } catch (e) {
+        var raw = (window.location.href || '');
+        s.setAttribute('data-page-url', raw.split('#')[0].split('?')[0]);
+      }
+      s.setAttribute('data-start-open','false');
+      document.body.appendChild(s);
+    })();
   </script>
 </body>
 </html>
