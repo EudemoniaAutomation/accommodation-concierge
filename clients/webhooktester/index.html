@@ -44,7 +44,7 @@
       background:linear-gradient(135deg,var(--acc),var(--acc-glow));color:#000;
       font-weight:800;font-size:1.05rem;text-decoration:none;border-radius:50px;
       transition:.3s;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(74,144,226,.4)
-      /* NOTE: no uppercase / tracking */
+      /* no uppercase */
     }
     .cta-primary:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 15px 60px rgba(74,144,226,.6)}
     .cta-secondary{display:inline-flex;align-items:center;gap:10px;padding:16px 28px;background:transparent;color:var(--acc);font-weight:800;font-size:1rem;text-decoration:none;border:2px solid var(--acc);border-radius:50px;transition:.3s}
@@ -199,8 +199,6 @@
           <div class="chat-input-area" id="inline-input-area">
             <input type="text" class="chat-input" id="inline-input" placeholder="Ask e.g. ‘Where’s a great place to eat tonight?’" />
             <button class="chat-send" id="inline-send">Send</button>
-
-            <!-- typing bubbles (injected/show via JS) -->
             <div id="inline-typing" class="typing-bubbles" aria-hidden="true">
               <div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
@@ -253,8 +251,8 @@
       </div>
 
       <div class="cta-container">
-        <a class="cta-primary" href="https://buy.stripe.com/dRmdRab5I2gycqN3nA0Jq00">Order GPT (with landing page)</a>
-        <a class="cta-secondary" href="https://buy.stripe.com/aFaaEY0r4aN4cqN2jw0Jq01">Order GPT (without landing page)</a>
+        <a class="cta-primary" href="https://buy.stripe.com/dRmdRab5I2gycqN3nA0Jq00">Order Endora (with landing page)</a>
+        <a class="cta-secondary" href="https://buy.stripe.com/aFaaEY0r4aN4cqN2jw0Jq01">Order Endora (without landing page)</a>
       </div>
 
       <div class="legal-line">
@@ -292,102 +290,79 @@
     </div>
   </div>
 
-  <!-- Helpers: force closed on load + friendly welcome + waiting animation controller -->
   <script>
     (function(){
-      // 1) Never auto-open on arrival (strip any openChat hash/query & hard-close popups)
+      // Never auto-open on arrival
       const url = new URL(window.location.href);
       if (url.hash === '#openChat') url.hash = '';
       if (url.searchParams.has('openChat')) url.searchParams.delete('openChat');
-      const cleaned = url.pathname + (url.searchParams.toString() ? ('?' + url.searchParams) : '');
-      if (location.href !== (url.origin + cleaned)) {
-        history.replaceState({}, '', cleaned);
-      }
-      function hardClose(){
-        const wrap = document.getElementById('popup-wrap');
-        const ovl  = document.getElementById('popup-overlay');
-        if (wrap) wrap.style.display = 'none';
-        if (ovl)  ovl.style.display  = 'none';
-      }
-      hardClose();
-      setTimeout(hardClose, 0); // in case anything tried to open immediately
+      history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
 
-      // 2) Nice waiting animation based on DOM changes
-      function wireTyping(ids){
-        const [messagesId, inputAreaId, typingId] = ids;
+      // Ensure popup is closed at start
+      const wrap = document.getElementById('popup-wrap');
+      const ovl  = document.getElementById('popup-overlay');
+      if (wrap) wrap.style.display = 'none';
+      if (ovl)  ovl.style.display  = 'none';
+
+      // Waiting animation wiring
+      function wireTyping(messagesId, inputAreaId, typingId){
         const messages  = document.getElementById(messagesId);
         const inputArea = document.getElementById(inputAreaId);
         const typing    = document.getElementById(typingId);
         if(!messages || !inputArea || !typing) return;
-
         let waiting = false;
-        function onUserSent(){
-          waiting = true;
-          inputArea.classList.add('waiting');
-          typing.classList.add('show');
-        }
-        function onBotAnswered(){
-          if(!waiting) return;
-          waiting = false;
-          inputArea.classList.remove('waiting');
-          typing.classList.remove('show');
-        }
         const mo = new MutationObserver(muts=>{
-          for(const m of muts){
-            m.addedNodes.forEach(node=>{
-              if(!(node instanceof HTMLElement)) return;
-              if(node.classList.contains('msg')){
-                if(node.classList.contains('user')) onUserSent();
-                if(node.classList.contains('bot'))  onBotAnswered();
+          muts.forEach(m=>{
+            m.addedNodes.forEach(n=>{
+              if(!(n instanceof HTMLElement)) return;
+              if(n.classList.contains('msg') && n.classList.contains('user')){
+                waiting = true; inputArea.classList.add('waiting'); typing.classList.add('show');
+              }
+              if(n.classList.contains('msg') && n.classList.contains('bot')){
+                waiting = false; inputArea.classList.remove('waiting'); typing.classList.remove('show');
               }
             });
+          });
+        });
+        mo.observe(messages,{childList:true});
+      }
+      wireTyping('inline-messages','inline-input-area','inline-typing');
+      wireTyping('popup-messages','popup-input-area','popup-typing');
+
+      // Safe welcome rewrite (no infinite loop)
+      const DESIRED = "Welcome! 👋 I'm Endora, your Digital Concierge. Ask me anything about your stay.";
+      function safeRewrite(containerId){
+        const container = document.getElementById(containerId);
+        if(!container) return;
+        const observer = new MutationObserver(()=>{
+          const firstBot = container.querySelector('.msg.bot');
+          if(!firstBot) return;
+          const current = (firstBot.textContent || '').trim();
+          if (current === DESIRED) return;            // already correct -> do nothing
+          if (current.includes("I'm Endora")) {
+            observer.disconnect();                    // avoid self-trigger loop
+            firstBot.textContent = DESIRED;
+            setTimeout(()=>observer.observe(container,{childList:true,subtree:true}),0);
           }
         });
-        mo.observe(messages, {childList:true});
-
-        // Also stop the animation if input changes again before a bot message arrives
-        const input = inputArea.querySelector('input[type="text"]');
-        input?.addEventListener('input', ()=>{ if(!waiting) { typing.classList.remove('show'); inputArea.classList.remove('waiting'); }});
+        observer.observe(container,{childList:true,subtree:true});
       }
-      wireTyping(['inline-messages','inline-input-area','inline-typing']);
-      wireTyping(['popup-messages','popup-input-area','popup-typing']);
+      safeRewrite('inline-messages');
+      safeRewrite('popup-messages');
 
-      // 3) Rewrite the very first welcome line (non-intrusive)
-      const desired = "Welcome! 👋 I'm Endora, your Digital Concierge. Ask me anything about your stay.";
-      function rewriteWelcome(containerId){
-        const el = document.getElementById(containerId);
-        if(!el) return;
-        const tryFix = () => {
-          const firstBot = el.querySelector('.msg.bot');
-          if(firstBot && firstBot.textContent && firstBot.textContent.includes("I'm Endora")) {
-            firstBot.textContent = desired;
-          }
-        };
-        tryFix();
-        new MutationObserver(tryFix).observe(el, {childList:true, subtree:true});
-      }
-      rewriteWelcome('inline-messages');
-      rewriteWelcome('popup-messages');
-
-      // 4) QR: keep on-page, only opens chat overlay—not whole page
+      // QR opens overlay only
       const qr = document.getElementById('apt-qr');
       qr?.addEventListener('click', (e)=>{
         e.preventDefault();
-        // simulate clicking the floating bubble the core attaches to
-        const fauxBtn = document.getElementById('inline-close'); // header exists; rely on core to bind open to bubble
-        // if your core exposes an open function, call it here instead.
-        const overlay = document.getElementById('popup-overlay');
-        const wrap    = document.getElementById('popup-wrap');
-        if (overlay && wrap){ overlay.style.display='block'; wrap.style.display='block'; }
+        if (ovl)  ovl.style.display  = 'block';
+        if (wrap) wrap.style.display = 'block';
       });
 
-      // Provide a QR image of this clean URL (no auto-open params)
+      // Generate clean QR (no auto-open params)
       (function setQr(){
-        const base = location.origin + location.pathname;
-        const target = base; // no hash/query to avoid auto-open
+        const target = location.origin + location.pathname;
         const src = 'https://quickchart.io/qr?text=' + encodeURIComponent(target) +
-                    '&size=260&margin=8&ecLevel=H&format=png' +
-                    '&dark=%23000000&light=%23ffffff';
+                    '&size=260&margin=8&ecLevel=H&format=png&dark=%23000000&light=%23ffffff';
         const fallback = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' + encodeURIComponent(target);
         const img = document.getElementById('apt-qr-img');
         if(!img) return;
@@ -397,7 +372,7 @@
     })();
   </script>
 
-  <!-- TECH: Coreloader (webhook + brand; exact page URL is auto-sent; will NOT auto-open) -->
+  <!-- Coreloader (exact page URL auto-sent; no auto-open) -->
   <script
     src="/chat-interface-tech-config/v1/coreloader.js"
     data-webhook="https://automation.eudemonia-coaching.de/webhook/477363f3-7434-4c31-92e5-fb4da3db4150"
