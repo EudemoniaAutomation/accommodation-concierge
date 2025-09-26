@@ -1,1 +1,4 @@
 Dies ist zwar das alte Backup/Sicherheitskopie bevor ich wegen des Paddle Checkout Endora in ein eigenes Repo geschrieben habe.  Dennoch kann der komplette Code für die Seite (.index) genpommen werden um neue Landingpages zu erzeugen er greift auf den Korrekten Webhook zu er kann auch die Loader zugreigfen, alles tippy toppy. Nimm Nicht den Code im Endora Repo sondern den hier :)
+
+
+Ich nutze dieses aber ebenfalls zu Testen ab jetzt es ist deshlab mit dem Test Worklfow verbunden (via dem Webhook)
